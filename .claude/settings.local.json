@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \":*)",
+      "Bash(awk 'NR>=395 && NR<=435' \"Maintenance_request_portal.html\")",
+      "Bash(python3 /c/Users/ajink/Downloads/patch_portal.py)",
+      "Bash(python3 patch_portal.py)",
+      "Bash(wc -c \"/c/Users/ajink/Downloads/Maintenance_request_portal \\(1\\).html\")",
+      "Bash(wc -l \"/c/Users/ajink/Downloads/Maintenance_request_portal \\(1\\).html\")",
+      "Bash(ls -lh \"/c/Users/ajink/Downloads/\"*aintenance*)",
+      "Bash(ls -lh \"/c/Users/ajink/Downloads/\"*portal*)",
+      "Bash(ls -lh \"/c/Users/ajink/Downloads/\"*Portal*)",
+      "Bash(# Broader search for any html files with portal/maint content find /c/Users/ajink -name \"\"*.html\"\" -size +100k)",
+      "Bash(npm install)",
+      "Bash(powershell.exe -Command \"where.exe node; node --version\")",
+      "Bash(powershell.exe -Command \"where.exe bun; where.exe deno\")",
+      "Bash(powershell.exe -Command \"choco --version\")",
+      "Bash(powershell.exe -Command \"choco install nodejs-lts -y\")",
+      "Bash(powershell.exe -Command \"& ''C:/Program Files/nodejs/node.exe'' --version\")",
+      "Bash(powershell.exe -Command \"& ''C:/ProgramData/chocolatey/lib/nodejs-lts/tools/node.exe'' --version\")",
+      "Bash(powershell.exe -Command \"scoop --version\")",
+      "Bash(powershell.exe -Command \"winget --version\")",
+      "Bash(powershell.exe -Command \":*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:/Users/ajink/OneDrive/Documents/heist/install-node.ps1\")",
+      "Bash(NODE=\"C:/Users/ajink/AppData/Local/nodejs/node-v20.18.0-win-x64/node.exe\")",
+      "Bash(NPM=\"C:/Users/ajink/AppData/Local/nodejs/node-v20.18.0-win-x64/npm.cmd\")",
+      "Bash(powershell.exe -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force; Write-Host ''Killed node processes''\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:/Users/ajink/OneDrive/Documents/heist/generate-icons.ps1\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:/Users/ajink/OneDrive/Documents/heist/cap-init.ps1\")",
+      "Bash(powershell.exe -Command \"Get-Item ''C:/Users/ajink/OneDrive/Documents/heist/src/audio.ts'' | Select-Object Name, Length\")",
+      "Bash(powershell.exe -Command \"Remove-Item ''C:/Users/ajink/OneDrive/Documents/heist/src/audio.ts'' -Force; Write-Host ''Deleted audio.ts''\")",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:/Users/ajink/OneDrive/Documents/heist/build-and-sync.ps1\")"
+    ]
+  }
+}
