@@ -2,6 +2,8 @@
  * Generates icon-192.png and icon-512.png without any external dependencies.
  * Pure Node.js built-in modules only.
  * Run: node generate-icons-simple.mjs
+ *
+ * Design: Crown + bold checkmark — "I CALLED IT" ego energy
  */
 import { deflateSync } from 'zlib';
 import { writeFileSync } from 'fs';
@@ -30,51 +32,94 @@ function hexToRgb(hex) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
+// Ray-casting point-in-polygon
+function pointInPolygon(px, py, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][0], yi = poly[i][1];
+    const xj = poly[j][0], yj = poly[j][1];
+    if (((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+// Distance from point to line segment
+function distToSegment(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1, dy = y2 - y1;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.sqrt((px - x1) ** 2 + (py - y1) ** 2);
+  const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSq));
+  return Math.sqrt((px - (x1 + t * dx)) ** 2 + (py - (y1 + t * dy)) ** 2);
+}
+
 function makePNG(size) {
-  const [r, g, b] = hexToRgb('#0d1117');
-  const rows = [];
   const s = size / 512;
+  const [bgR, bgG, bgB] = hexToRgb('#0d1117');
+  const [goldR, goldG, goldB] = hexToRgb('#f59e0b'); // 245, 158, 11
 
-  const barDefs = [
-    { lx: 80,  ly: 320, rw: 64, rh: 112, cr: 0x22, cg: 0xc5, cb: 0x5e, a: 0.7 },
-    { lx: 168, ly: 256, rw: 64, rh: 176, cr: 0x22, cg: 0xc5, cb: 0x5e, a: 0.85 },
-    { lx: 256, ly: 192, rw: 64, rh: 240, cr: 0x22, cg: 0xc5, cb: 0x5e, a: 1.0 },
-    { lx: 344, ly: 128, rw: 64, rh: 304, cr: 0x3b, cg: 0x82, cb: 0xf6, a: 1.0 },
+  // Crown polygon (512-space): 3 points + flat base
+  const crownPoly = [
+    [256, 52], [296, 108], [346, 70], [322, 148],
+    [190, 148], [166, 70], [216, 108]
   ];
-  const trendPts = [[112,310],[200,246],[288,182],[376,118]];
+  // Crown base bar rect
+  const cb = { x: 182, y: 134, w: 148, h: 28 };
 
+  // Checkmark polyline: 80,290 → 205,415 → 432,155
+  const ckPts = [[80, 290], [205, 415], [432, 155]];
+  const ckHalf = 36;       // half of stroke-width 72
+  const ckInnerHalf = 10;  // half of inner white stroke 20 (opacity 0.18)
+
+  // Exclamation dot: cx=434, cy=445, r=20
+  const dotCx = 434, dotCy = 445, dotR = 20;
+
+  const rows = [];
   for (let y = 0; y < size; y++) {
     const row = Buffer.alloc(1 + size * 3);
-    row[0] = 0; // filter type None
+    row[0] = 0; // filter None
     for (let x = 0; x < size; x++) {
-      let pr = r, pg = g, pb = b;
+      // Map pixel to 512-coordinate space
+      const sx = x / s;
+      const sy = y / s;
 
-      for (const bar of barDefs) {
-        const bx = bar.lx * s, by = bar.ly * s, bw = bar.rw * s, bh = bar.rh * s;
-        if (x >= bx && x < bx + bw && y >= by && y < by + bh) {
-          pr = Math.round(r + (bar.cr - r) * bar.a);
-          pg = Math.round(g + (bar.cg - g) * bar.a);
-          pb = Math.round(b + (bar.cb - b) * bar.a);
+      let pr = bgR, pg = bgG, pb = bgB;
+
+      // 1. Crown polygon
+      if (pointInPolygon(sx, sy, crownPoly)) {
+        pr = goldR; pg = goldG; pb = goldB;
+      }
+
+      // 2. Crown base rect
+      if (sx >= cb.x && sx < cb.x + cb.w && sy >= cb.y && sy < cb.y + cb.h) {
+        pr = goldR; pg = goldG; pb = goldB;
+      }
+
+      // 3. Bold checkmark (stroke)
+      let minDist = Infinity;
+      for (let i = 0; i < ckPts.length - 1; i++) {
+        const d = distToSegment(sx, sy, ckPts[i][0], ckPts[i][1], ckPts[i + 1][0], ckPts[i + 1][1]);
+        if (d < minDist) minDist = d;
+      }
+      if (minDist < ckHalf) {
+        pr = goldR; pg = goldG; pb = goldB;
+        // Inner white highlight (opacity 0.18 over gold)
+        if (minDist < ckInnerHalf) {
+          pr = Math.round(goldR + (255 - goldR) * 0.18);
+          pg = Math.round(goldG + (255 - goldG) * 0.18);
+          pb = Math.round(goldB + (255 - goldB) * 0.18);
         }
       }
 
-      for (let i = 0; i < trendPts.length - 1; i++) {
-        const x1 = trendPts[i][0] * s,   y1 = trendPts[i][1] * s;
-        const x2 = trendPts[i+1][0] * s, y2 = trendPts[i+1][1] * s;
-        const dx = x2 - x1, dy = y2 - y1;
-        const lenSq = dx*dx + dy*dy;
-        const t = lenSq === 0 ? 0 : Math.max(0, Math.min(1, ((x-x1)*dx + (y-y1)*dy) / lenSq));
-        const dist = Math.sqrt((x1 + t*dx - x)**2 + (y1 + t*dy - y)**2);
-        if (dist < 7 * s) { pr = 0xf5; pg = 0x9e; pb = 0x0b; }
+      // 4. Exclamation dot (bottom-right)
+      const dd = Math.sqrt((sx - dotCx) ** 2 + (sy - dotCy) ** 2);
+      if (dd < dotR) {
+        pr = goldR; pg = goldG; pb = goldB;
       }
 
-      const dotX = 376 * s, dotY = 118 * s;
-      const dd = Math.sqrt((x - dotX)**2 + (y - dotY)**2);
-      if (dd < 18 * s) { pr = 0xf5; pg = 0x9e; pb = 0x0b; }
-      if (dd < 10 * s) { pr = 0xff; pg = 0xff; pb = 0xff; }
-
       const off = 1 + x * 3;
-      row[off] = pr; row[off+1] = pg; row[off+2] = pb;
+      row[off] = pr; row[off + 1] = pg; row[off + 2] = pb;
     }
     rows.push(row);
   }
