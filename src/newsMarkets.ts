@@ -4,10 +4,30 @@ import type { Market } from './types';
 const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
 
 const FEEDS: { url: string; category: Market['category'] }[] = [
-  { url: 'https://feeds.bbci.co.uk/sport/rss.xml',                       category: 'sports'        },
-  { url: 'https://feeds.bbci.co.uk/news/business/rss.xml',               category: 'finance'       },
-  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                  category: 'platform'      },
-  { url: 'https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml', category: 'entertainment' },
+  // ── Cricket & Sports (India-first) ────────────────────────────────────────
+  { url: 'https://feeds.bbci.co.uk/sport/cricket/rss.xml',                   category: 'sports' },
+  { url: 'https://www.espncricinfo.com/rss/content/story/feeds/0.xml',        category: 'sports' },
+  { url: 'https://timesofindia.indiatimes.com/rssfeeds/4719161.cms',          category: 'sports' },
+  { url: 'https://feeds.bbci.co.uk/sport/football/rss.xml',                  category: 'sports' },
+  { url: 'https://www.crictracker.com/feed/',                                 category: 'sports' },
+
+  // ── Finance (India + Global) ──────────────────────────────────────────────
+  { url: 'https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms', category: 'finance' },
+  { url: 'https://economictimes.indiatimes.com/rssfeedsdefault.cms',          category: 'finance' },
+  { url: 'https://feeds.bbci.co.uk/news/business/rss.xml',                   category: 'finance' },
+  { url: 'https://feeds.reuters.com/reuters/businessNews',                   category: 'finance' },
+
+  // ── Entertainment & Bollywood ─────────────────────────────────────────────
+  { url: 'https://www.bollywoodhungama.com/feed/',                            category: 'entertainment' },
+  { url: 'https://www.koimoi.com/feed/',                                      category: 'entertainment' },
+  { url: 'https://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml',     category: 'entertainment' },
+
+  // ── World & India General ─────────────────────────────────────────────────
+  { url: 'https://feeds.feedburner.com/NdtvNews-TopStories',                  category: 'platform' },
+  { url: 'https://www.thehindu.com/news/national/feeder/default.rss',         category: 'platform' },
+  { url: 'https://timesofindia.indiatimes.com/rssfeedsdefault.cms',           category: 'platform' },
+  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                      category: 'platform' },
+  { url: 'https://www.aljazeera.com/xml/rss/all.xml',                        category: 'platform' },
 ];
 
 interface RSSItem { title: string; description: string }
@@ -98,10 +118,10 @@ const MCQ_TEMPLATES: MarketDraft[] = [
 
 function detectCategory(title: string, fallback: Market['category']): Market['category'] {
   const t = title.toLowerCase();
-  if (/cricket|football|soccer|tennis|ipl|nba|match|score|team|league|tournament|player|goal|wicket/i.test(t)) return 'sports';
-  if (/stock|market|bitcoin|crypto|economy|inflation|gdp|rupee|dollar|bank|invest|rate|shares?|nasdaq|sensex|nifty/i.test(t)) return 'finance';
-  if (/rain|weather|temperature|climate|storm|flood|cyclone|celsius|fahrenheit/i.test(t)) return 'weather';
-  if (/movie|film|actor|actress|oscar|bollywood|netflix|series|music|award|celebrity|box.?office/i.test(t)) return 'entertainment';
+  if (/cricket|football|soccer|tennis|ipl|nba|nfl|f1|formula.?1|match|score|team|league|tournament|player|goal|wicket|odi|t20|test match|rohit|kohli|bumrah|virat|dhoni|messi|ronaldo|mbapp|federer|djokovic/i.test(t)) return 'sports';
+  if (/stock|market|bitcoin|crypto|ethereum|btc|eth|economy|inflation|gdp|rupee|dollar|bank|invest|rate|shares?|nasdaq|sensex|nifty|rbi|sebi|ipo|fed|interest rate|oil price|gold price/i.test(t)) return 'finance';
+  if (/rain|weather|temperature|climate|storm|flood|cyclone|celsius|fahrenheit|monsoon|drought/i.test(t)) return 'weather';
+  if (/movie|film|actor|actress|oscar|bollywood|netflix|series|music|award|celebrity|box.?office|ott|release|trailer|srk|salman|deepika|ranveer|alia|ranbir|shah rukh|karan johar|tollywood|kollywood/i.test(t)) return 'entertainment';
   return fallback;
 }
 
@@ -193,7 +213,7 @@ export async function fetchNewsMarkets(): Promise<MarketDraft[]> {
     FEEDS.map(feed =>
       fetch(`${RSS_PROXY}${encodeURIComponent(feed.url)}`, { signal: AbortSignal.timeout(8000) })
         .then(r => r.json() as Promise<RSSResponse>)
-        .then(data => ({ items: (data.items ?? []).slice(0, 3), category: feed.category }))
+        .then(data => ({ items: (data.items ?? []).slice(0, 5), category: feed.category }))
     )
   );
 
@@ -202,7 +222,7 @@ export async function fetchNewsMarkets(): Promise<MarketDraft[]> {
     if (result.status !== 'fulfilled') continue;
     const { items, category } = result.value;
     for (const item of items) {
-      if (binaryDrafts.length >= 6) break;
+      if (binaryDrafts.length >= 14) break;
       if (!item.title) continue;
       const question = headlineToQuestion(item.title);
       if (!question) continue; // skip headlines that don't form good YES/NO questions
