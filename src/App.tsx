@@ -4,6 +4,11 @@ import { reducer, createInitialState, getPlayerTitle } from './gameEngine';
 import type { MarketDraft } from './gameEngine';
 import { createInitialMarkets } from './gameData';
 import { fetchNewsMarkets } from './newsMarkets';
+import {
+  requestNotificationPermission,
+  sendTopicNotification,
+  getActiveTopics,
+} from './notifications';
 import UsernameModal from './components/UsernameModal';
 import DailyBonus from './components/DailyBonus';
 import Toast from './components/Toast';
@@ -32,7 +37,19 @@ export default function App() {
   const [state, dispatch] = useReducer(reducer, undefined, initState);
   const [fetching, setFetching] = useState(false);
   const [liveStatus, setLiveStatus] = useState<'idle' | 'ok' | 'error'>('idle');
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+  );
+
+  // Refs to avoid stale closures in setInterval callbacks
+  const fetchingRef = useRef(false);
   const lastFetchRef = useRef<number>(0);
+  const stateRef = useRef(state);
+
+  // Keep stateRef fresh every render
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // Persist state on every change
   useEffect(() => {
@@ -51,9 +68,11 @@ export default function App() {
     return () => clearInterval(id);
   }, []);
 
-  const refreshMarkets = useCallback(async () => {
-    if (fetching) return;
-    setFetching(true);
+  // ── Core fetch function (stable — uses refs, safe for intervals) ───────────
+  const doRefresh = useCallback(async (silent = false) => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
+    if (!silent) setFetching(true);
     try {
       lastFetchRef.current = Date.now();
       const markets = await fetchNewsMarkets();
@@ -64,23 +83,59 @@ export default function App() {
         throw new Error('empty');
       }
     } catch {
-      // Fall back to static markets
-      dispatch({ type: 'ADD_MARKETS', markets: createInitialMarkets(Date.now()) as MarketDraft[] });
-      setLiveStatus('error');
+      if (!silent) {
+        // Fallback to static markets only on manual / low-count refresh
+        dispatch({ type: 'ADD_MARKETS', markets: createInitialMarkets(Date.now()) as MarketDraft[] });
+        setLiveStatus('error');
+      }
     } finally {
-      setFetching(false);
+      fetchingRef.current = false;
+      if (!silent) setFetching(false);
     }
-  }, [fetching]);
+  }, []);
 
-  // Auto-replenish when running low (at most once every 5 min)
+  // Manual refresh button wrapper
+  const refreshMarkets = useCallback(() => doRefresh(false), [doRefresh]);
+
+  // ── Auto news refresh every 5 minutes (silent background fetch) ────────────
+  useEffect(() => {
+    const id = setInterval(() => doRefresh(true), 5 * 60_000);
+    return () => clearInterval(id);
+  }, [doRefresh]);
+
+  // ── Fallback: replenish immediately when running very low ──────────────────
   const openCount = state.markets.filter(m => m.status === 'open').length;
   useEffect(() => {
-    const cooldown = 5 * 60 * 1000;
-    if (openCount < 5 && !fetching && Date.now() - lastFetchRef.current > cooldown) {
-      refreshMarkets();
+    const cooldown = 5 * 60_000;
+    if (openCount < 5 && !fetchingRef.current && Date.now() - lastFetchRef.current > cooldown) {
+      doRefresh(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openCount]);
+
+  // ── Hourly push notifications based on user's active-bet topics ───────────
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+      const { bets, markets } = stateRef.current;
+      const topics = getActiveTopics(bets, markets);
+      sendTopicNotification(topics, bets, markets);
+    }, 60 * 60_000); // every hour
+    return () => clearInterval(id);
+  }, []);
+
+  // ── Notification bell handler ──────────────────────────────────────────────
+  async function handleEnableNotifications() {
+    const perm = await requestNotificationPermission();
+    setNotifPermission(perm);
+    if (perm === 'granted') {
+      new Notification('ToldYa notifications are ON! 🔔', {
+        body: "You'll get hourly alerts on your active predictions. Let's go!",
+        icon: '/icons/icon-192.png',
+        tag: 'toldya-welcome',
+      });
+    }
+  }
 
   const { user, markets, bets, view, selectedMarketId, showUsernameModal, showDailyBonus, dailyBonusAmount, toast } = state;
 
@@ -132,6 +187,28 @@ export default function App() {
                 🎁
               </button>
             )}
+
+            {/* Notification bell — visible unless browser has permanently denied */}
+            {typeof Notification !== 'undefined' && notifPermission !== 'denied' && (
+              <button
+                className="header-daily-btn"
+                onClick={notifPermission === 'granted' ? undefined : handleEnableNotifications}
+                title={
+                  notifPermission === 'granted'
+                    ? 'Hourly notifications ON ✓'
+                    : 'Tap to enable hourly prediction alerts'
+                }
+                style={{
+                  cursor: notifPermission === 'granted' ? 'default' : 'pointer',
+                  color: notifPermission === 'granted' ? 'var(--yes)' : 'var(--muted)',
+                  fontSize: '1rem',
+                }}
+              >
+                {notifPermission === 'granted' ? '🔔' : '🔕'}
+              </button>
+            )}
+
+            {/* Live news refresh button */}
             <button
               onClick={refreshMarkets}
               disabled={fetching}

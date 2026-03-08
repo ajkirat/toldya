@@ -369,6 +369,12 @@ export function reducer(state: GameState, action: Action): GameState {
     case 'ADD_MARKETS': {
       const now = Date.now();
       const H   = 3_600_000;
+      const MAX_OPEN = 20; // cap to keep the feed focused
+
+      // Don't add more if already at capacity
+      const currentOpen = state.markets.filter(m => m.status === 'open').length;
+      const slotsAvailable = MAX_OPEN - currentOpen;
+      if (slotsAvailable <= 0) return state;
 
       // Deduplicate: skip any draft whose title already exists among open markets
       const existingTitles = new Set(
@@ -376,9 +382,9 @@ export function reducer(state: GameState, action: Action): GameState {
           .filter(m => m.status === 'open')
           .map(m => m.title.trim().toLowerCase())
       );
-      const dedupedDrafts = action.markets.filter(
-        d => !existingTitles.has(d.title.trim().toLowerCase())
-      );
+      const dedupedDrafts = action.markets
+        .filter(d => !existingTitles.has(d.title.trim().toLowerCase()))
+        .slice(0, slotsAvailable); // respect the cap
       if (dedupedDrafts.length === 0) return state;
 
       const newMarkets: Market[] = dedupedDrafts.map((m, i) => {
