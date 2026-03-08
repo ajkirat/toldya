@@ -225,7 +225,7 @@ function resolveMarketsInState(state: GameState): GameState {
       streak = 0;
       profit -= bet.amount;
       lastToast = {
-        message: `Lost ${bet.amount.toLocaleString()} coins on "${market.title.substring(0, 34)}…"`,
+        message: `Missed it! −${bet.amount.toLocaleString()} coins on "${market.title.substring(0, 32)}…"`,
         type: 'loss',
       };
       return { ...bet, resolved: true, payout: 0, profit: -bet.amount };
@@ -359,7 +359,7 @@ export function reducer(state: GameState, action: Action): GameState {
         user: { ...state.user, coins: state.user.coins - effectiveAmount },
         markets: updatedMarkets,
         bets: [...state.bets, newBet],
-        toast: { message: `Bet placed! ${effectiveAmount.toLocaleString()} coins on ${label}${confLabel}`, type: 'info' },
+        toast: { message: `Prediction locked! ${effectiveAmount.toLocaleString()} coins on ${label}${confLabel}`, type: 'info' },
       };
     }
 

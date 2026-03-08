@@ -136,7 +136,7 @@ export default function Profile({ user, bets, markets }: Props) {
       {/* Pending bets */}
       {pendingBets.length > 0 && (
         <div style={{ padding: '0 12px 8px' }}>
-          <div className="section-header">Open Bets ({pendingBets.length})</div>
+          <div className="section-header">Live Predictions ({pendingBets.length})</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {pendingBets.map(bet => (
               <div key={bet.id} className="bet-history-item">
@@ -164,7 +164,7 @@ export default function Profile({ user, bets, markets }: Props) {
         {resolvedBets.length === 0 ? (
           <div className="empty-state" style={{ padding: '24px 0' }}>
             <span className="empty-icon">📜</span>
-            <p>No resolved bets yet. Go place some!</p>
+            <p>No resolved predictions yet. Make your first call!</p>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -179,7 +179,7 @@ export default function Profile({ user, bets, markets }: Props) {
                     {bet.marketTitle}
                   </div>
                   <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>
-                    Bet {bet.amount.toLocaleString()} @ {bet.probAtBet}%
+                    Predicted {bet.amount.toLocaleString()} coins @ {bet.probAtBet}%
                     {bet.legendary && <span style={{ color: '#f59e0b' }}> · 🏆 Legendary</span>}
                   </div>
                 </div>

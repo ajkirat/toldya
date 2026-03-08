@@ -64,7 +64,7 @@ export default function MarketList({ markets, bets, dispatch }: Props) {
         </span>
         <span style={{ color: 'var(--muted)' }}>·</span>
         <span style={{ color: 'var(--muted)' }}>
-          {bets.filter(b => !b.resolved).length} open bets
+          {bets.filter(b => !b.resolved).length} live predictions
         </span>
         <span style={{ color: 'var(--muted)' }}>·</span>
         <span style={{ color: 'var(--gold)', fontWeight: 700 }}>

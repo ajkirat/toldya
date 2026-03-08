@@ -22,7 +22,7 @@ export function createInitialMarkets(now: number = Date.now()): Market[] {
     {
       id: 'm2',
       title: 'Bitcoin closes above $70,000 today?',
-      description: 'BTC has been trading between $68k–$72k this week. Bulls and bears in a standoff near key resistance.',
+      description: 'BTC has been ranging between $68k–$72k this week. Bulls and bears in a standoff near key resistance.',
       type: 'binary',
       category: 'finance',
       closeTime: now + 6 * H,
@@ -127,7 +127,7 @@ export function createInitialMarkets(now: number = Date.now()): Market[] {
     {
       id: 'm9',
       title: 'Ethereum gains 3%+ this week?',
-      description: 'ETH trading near $3,800. Spot ETF approval anticipation driving high volatility across altcoins.',
+      description: 'ETH hovering near $3,800. Spot ETF approval anticipation driving high volatility across altcoins.',
       type: 'binary',
       category: 'finance',
       closeTime: now + 48 * H,
@@ -156,8 +156,8 @@ export function createInitialMarkets(now: number = Date.now()): Market[] {
     },
     {
       id: 'm11',
-      title: '10,000+ bets placed on PredictX today?',
-      description: 'Platform currently at 8,200+ active users. Growing 15% week-over-week as word spreads.',
+      title: '10,000+ predictions made on ToldYa today?',
+      description: 'Platform currently at 8,200+ active predictors. Growing 15% week-over-week as word spreads.',
       type: 'binary',
       category: 'platform',
       closeTime: now + 10 * H,

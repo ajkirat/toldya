@@ -18,21 +18,21 @@ export default function UsernameModal({ dispatch }: Props) {
     <div className="modal-overlay">
       <div className="modal">
         <div className="modal-header">
-          <span className="modal-icon">📈</span>
+          <span className="modal-icon">👑</span>
           <div className="modal-title">Welcome to ToldYa</div>
           <div className="modal-subtitle">
-            Trade on real-world events. Earn coins. Climb the leaderboard.
+            Predict real-world events. Prove you called it. Climb the leaderboard.
           </div>
         </div>
         <div className="modal-body">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-              Your trader name
+              Your predictor name
             </label>
             <input
               className="modal-input"
               type="text"
-              placeholder="e.g. BullishBanker"
+              placeholder="e.g. SharpCaller"
               value={name}
               onChange={e => setName(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -53,7 +53,7 @@ export default function UsernameModal({ dispatch }: Props) {
             gap: '4px',
           }}>
             <div style={{ color: 'var(--text)', fontWeight: 700, marginBottom: '4px' }}>Starting package:</div>
-            <div>🪙 <strong style={{ color: 'var(--gold)' }}>1,000 coins</strong> to start trading</div>
+            <div>🪙 <strong style={{ color: 'var(--gold)' }}>1,000 coins</strong> to start predicting</div>
             <div>🎁 <strong style={{ color: 'var(--gold)' }}>+50 bonus</strong> daily login reward</div>
             <div>🔥 <strong style={{ color: 'var(--orange)' }}>Streaks</strong> unlock bigger daily bonuses</div>
           </div>
@@ -63,7 +63,7 @@ export default function UsernameModal({ dispatch }: Props) {
             onClick={handleSubmit}
             disabled={name.trim().length < 2}
           >
-            Start Trading →
+            Start Predicting →
           </button>
         </div>
       </div>

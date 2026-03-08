@@ -144,7 +144,7 @@ export default function MarketDetail({ market, bets, user, dispatch }: Props) {
             </div>
           ) : (
             <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '0.7rem', color: 'var(--muted)', textAlign: 'center', marginBottom: '4px' }}>Bet to reveal crowd odds</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--muted)', textAlign: 'center', marginBottom: '4px' }}>Predict to reveal crowd odds</div>
               <div style={{ height: '10px', background: 'var(--surface2)', borderRadius: '5px', border: '1px solid var(--border)' }} />
             </div>
           )}
@@ -156,7 +156,7 @@ export default function MarketDetail({ market, bets, user, dispatch }: Props) {
                 <>AI predicts <strong>YES at {Math.round(market.aiPrediction * 100)}%</strong>
                   {aiAgreesWith === null ? ' — aligns with market' : aiAgreesWith === 'yes' ? ' — more bullish than market' : ' — more bearish than market'}
                 </>
-              ) : <strong>AI has a prediction — bet to reveal</strong>}
+              ) : <strong>AI has a prediction — predict to reveal</strong>}
             </div>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function MarketDetail({ market, bets, user, dispatch }: Props) {
             <div className="ai-comparison-text">
               {hasBet
                 ? <>AI favours <strong>{aiPredictedLabel}</strong></>
-                : <strong>AI has a pick — bet to reveal</strong>}
+                : <strong>AI has a pick — predict to reveal</strong>}
             </div>
           </div>
         </div>
@@ -217,11 +217,11 @@ export default function MarketDetail({ market, bets, user, dispatch }: Props) {
       {/* ── Bet controls ────────────────────────────────────── */}
       {isOpen && (
         <div className="bet-section">
-          <div className="bet-section-title">Place Your Bet</div>
+          <div className="bet-section-title">Make Your Prediction</div>
 
           {activeBet && (
             <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--r-sm)', padding: '10px 12px', fontSize: '0.82rem', color: 'var(--muted)', marginBottom: '10px' }}>
-              Active bet:{' '}
+              Your prediction:{' '}
               <strong style={{ color: activeBet.optionLabel ? 'var(--primary)' : activeBet.side === 'yes' ? 'var(--yes)' : 'var(--no)' }}>
                 {activeBet.optionLabel ?? activeBet.side.toUpperCase()} — {activeBet.amount.toLocaleString()} coins
               </strong>
@@ -307,7 +307,7 @@ export default function MarketDetail({ market, bets, user, dispatch }: Props) {
                         onClick={() => { setSelectedSide(side); if (betAmount > 0 && effectiveAmount <= user.coins) placeBinaryBet(side); }}
                         disabled={betAmount <= 0 || effectiveAmount > user.coins}
                       >
-                        {side.toUpperCase()} — Bet
+                        {side.toUpperCase()} — Predict
                       </button>
                     ))}
                   </div>
@@ -334,7 +334,7 @@ export default function MarketDetail({ market, bets, user, dispatch }: Props) {
                     disabled={effectiveAmount > user.coins}
                     style={{ background: OPTION_COLORS[selectedOption % OPTION_COLORS.length], borderColor: OPTION_COLORS[selectedOption % OPTION_COLORS.length] }}
                   >
-                    Bet {effectiveAmount.toLocaleString()} on {market.options?.[selectedOption]}
+                    Predict {effectiveAmount.toLocaleString()} on {market.options?.[selectedOption]}
                   </button>
                 </>
               )}
@@ -353,10 +353,10 @@ export default function MarketDetail({ market, bets, user, dispatch }: Props) {
         </div>
       )}
 
-      {/* Your bets */}
+      {/* Your predictions */}
       {userBets.length > 0 && (
         <div className="your-bets-section">
-          <div className="bet-section-title">Your Bets on This Market</div>
+          <div className="bet-section-title">Your Predictions on This Market</div>
           {userBets.map(bet => (
             <div key={bet.id} className="bet-history-item">
               <span className={`bet-history-side ${bet.optionLabel ? '' : bet.side}`}
