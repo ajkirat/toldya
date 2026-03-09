@@ -9,8 +9,6 @@ import {
   sendTopicNotification,
   getActiveTopics,
 } from './notifications';
-import type { AuthState } from './auth';
-import { clearAuth, gameStorageKey } from './auth';
 import UsernameModal from './components/UsernameModal';
 import DailyBonus from './components/DailyBonus';
 import Toast from './components/Toast';
@@ -20,44 +18,20 @@ import MarketDetail from './components/MarketDetail';
 import Profile from './components/Profile';
 import Leaderboard from './components/Leaderboard';
 
-interface Props {
-  auth: AuthState;
-  onLogout: () => void;
-}
+const STORAGE_KEY = 'predictx_v1';
 
-function loadState(storageKey: string): GameState | null {
+function loadState(): GameState | null {
   try {
-    const raw = localStorage.getItem(storageKey);
+    const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as GameState) : null;
   } catch {
     return null;
   }
 }
 
-export default function GameApp({ auth, onLogout }: Props) {
-  const storageKey = gameStorageKey(auth.uid);
-
+export default function GameApp() {
   function initState(): GameState {
-    const saved = loadState(storageKey);
-    if (saved) return saved;
-    // First time for this Google user — pre-fill their name from Google profile
-    const fresh = createInitialState();
-    return {
-      ...fresh,
-      // Skip the username modal; use Google display name directly
-      showUsernameModal: false,
-      user: {
-        username: auth.name.split(' ')[0] || auth.name, // first name
-        coins: 1000,
-        streak: 0,
-        bestStreak: 0,
-        lastActiveDate: '',
-        lastDailyBonusDate: '',
-        correctPredictions: 0,
-        totalPredictions: 0,
-        totalProfit: 0,
-      },
-    };
+    return loadState() ?? createInitialState();
   }
 
   const [state, dispatch] = useReducer(reducer, undefined, initState);
@@ -74,8 +48,8 @@ export default function GameApp({ auth, onLogout }: Props) {
   useEffect(() => { stateRef.current = state; }, [state]);
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(state));
-  }, [state, storageKey]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [state]);
 
   useEffect(() => {
     dispatch({ type: 'CHECK_DAILY_BONUS' });
@@ -178,7 +152,7 @@ export default function GameApp({ auth, onLogout }: Props) {
       );
     }
     if (view === 'profile' && user) {
-      return <Profile user={user} bets={bets} markets={markets} onLogout={onLogout} />;
+      return <Profile user={user} bets={bets} markets={markets} />;
     }
     if (view === 'leaderboard' && user) {
       return <Leaderboard user={user} />;
@@ -246,16 +220,6 @@ export default function GameApp({ auth, onLogout }: Props) {
             >
               {fetching ? '⟳' : liveStatus === 'ok' ? '🌐' : '📡'}
             </button>
-
-            {/* Google avatar */}
-            {auth.picture && (
-              <img
-                src={auth.picture}
-                alt={auth.name}
-                title={`${auth.name}\n${auth.email}`}
-                style={{ width: 28, height: 28, borderRadius: '50%', cursor: 'default', border: '1px solid var(--border)' }}
-              />
-            )}
           </div>
         </header>
       )}
