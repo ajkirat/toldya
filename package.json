@@ -12,6 +12,7 @@
     "mobile:ios": "npm run build && npx cap sync && npx cap open ios"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

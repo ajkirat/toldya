@@ -6,6 +6,7 @@ interface Props {
   user: User;
   bets: Bet[];
   markets: Market[];
+  onLogout?: () => void;
 }
 
 const TITLE_COLORS: Record<string, string> = {
@@ -16,7 +17,7 @@ const TITLE_COLORS: Record<string, string> = {
   'Rookie Predictor': 'var(--muted)',
 };
 
-export default function Profile({ user, bets, markets }: Props) {
+export default function Profile({ user, bets, markets, onLogout }: Props) {
   const accuracy = user.totalPredictions > 0
     ? Math.round((user.correctPredictions / user.totalPredictions) * 100)
     : 0;
@@ -155,6 +156,27 @@ export default function Profile({ user, bets, markets }: Props) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Sign out */}
+      {onLogout && (
+        <div style={{ padding: '0 12px 8px' }}>
+          <button
+            onClick={onLogout}
+            style={{
+              width: '100%',
+              background: 'none',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--r-sm)',
+              color: 'var(--muted)',
+              padding: '8px',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+            }}
+          >
+            Sign out
+          </button>
         </div>
       )}
 
