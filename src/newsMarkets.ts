@@ -185,66 +185,139 @@ function isYesNoWorthy(raw: string): boolean {
   return true;
 }
 
-// Verb normalization: match inflected form → infinitive for "Will X [verb] [rest]?"
-const VERB_NORMS: [RegExp, string][] = [
-  [/\b(beats?|defeats?|clinches?|triumphs?\s+over)\b/i,           'beat'],
-  [/\b(wins?)\b/i,                                                 'win'],
-  [/\b(rises?|gains?|surges?|jumps?|rallies?|soars?|climbs?)\b/i, 'rise'],
-  [/\b(falls?|drops?|declines?|slumps?|crashes?|tumbles?)\b/i,   'fall'],
-  [/\b(releases?|launches?|unveils?|announces?|reveals?)\b/i,     'release'],
-  [/\b(crosses?|surpasses?|reaches?|hits?|achieves?)\b/i,         'cross'],
-  [/\b(scores?)\b/i,                                              'score'],
-  [/\b(signs?|passes?|approves?|backs?|endorses?)\b/i,            'pass'],
-  [/\b(cuts?|reduces?|lowers?|slashes?)\b/i,                      'cut'],
-  [/\b(raises?|hikes?|increases?|lifts?)\b/i,                     'raise'],
-  [/\b(resigns?|quits?|steps?\s+down)\b/i,                        'resign'],
-  [/\b(retains?|keeps?)\b/i,                                      'retain'],
-  [/\b(breaks?)\b/i,                                              'break'],
-  [/\b(returns?)\b/i,                                             'return'],
-  [/\b(makes?|earns?|collects?)\b/i,                              'make'],
-  [/\b(qualifies?|advances?|progresses?)\b/i,                     'qualify'],
+// Each verb maps to its own correct infinitive (no grouping — avoids "hits" → "cross" bugs)
+const VERB_MAP: [RegExp, string][] = [
+  // Sports / competition
+  [/\bbeats?\b/i,           'beat'],
+  [/\bwins?\b/i,            'win'],
+  [/\bdefeats?\b/i,         'defeat'],
+  [/\bclinches?\b/i,        'clinch'],
+  [/\bsecures?\b/i,         'secure'],
+  [/\bqualifies?\b/i,       'qualify'],
+  [/\badvances?\b/i,        'advance'],
+  [/\bleads?\b/i,           'lead'],
+  [/\bclashes?\b/i,         'clash'],
+  [/\bfaces?\b/i,           'face'],
+  [/\bplays?\b/i,           'play'],
+  [/\bmisses?\b/i,          'miss'],
+  [/\bskips?\b/i,           'skip'],
+  [/\bjoins?\b/i,           'join'],
+  [/\bretains?\b/i,         'retain'],
+  [/\bovertak(es?|en)\b/i,  'overtake'],
+  // Scoring / achievement
+  [/\bscores?\b/i,          'score'],
+  [/\bhits?\b/i,            'hit'],
+  [/\bcrosses?\b/i,         'cross'],
+  [/\bsurpasses?\b/i,       'surpass'],
+  [/\breaches?\b/i,         'reach'],
+  [/\bachieves?\b/i,        'achieve'],
+  [/\bbreaks?\b/i,          'break'],
+  [/\bsets?\b/i,            'set'],
+  // Financial movement — up
+  [/\brises?\b/i,           'rise'],
+  [/\bgains?\b/i,           'gain'],
+  [/\bsurges?\b/i,          'surge'],
+  [/\bjumps?\b/i,           'jump'],
+  [/\bsoars?\b/i,           'soar'],
+  [/\brallies?\b/i,         'rally'],
+  [/\bclimbs?\b/i,          'climb'],
+  [/\bbounces?\b/i,         'bounce'],
+  [/\brecov(ers?)\b/i,      'recover'],
+  // Financial movement — down
+  [/\bfalls?\b/i,           'fall'],
+  [/\bdrops?\b/i,           'drop'],
+  [/\bdeclines?\b/i,        'decline'],
+  [/\bslumps?\b/i,          'slump'],
+  [/\bcrashes?\b/i,         'crash'],
+  [/\btumbles?\b/i,         'tumble'],
+  [/\bplunges?\b/i,         'plunge'],
+  [/\btanks?\b/i,           'tank'],
+  // Financial levels
+  [/\bsettles?\b/i,         'settle'],
+  [/\bcloses?\b/i,          'close'],
+  [/\bopens?\b/i,           'open'],
+  // Announcements / releases
+  [/\blaunches?\b/i,        'launch'],
+  [/\breleases?\b/i,        'release'],
+  [/\bannounces?\b/i,       'announce'],
+  [/\bunveils?\b/i,         'unveil'],
+  [/\breveals?\b/i,         'reveal'],
+  [/\bconfirms?\b/i,        'confirm'],
+  [/\bpremieres?\b/i,       'premiere'],
+  [/\bstreams?\b/i,         'stream'],
+  // Legal / policy
+  [/\bsigns?\b/i,           'sign'],
+  [/\bapproves?\b/i,        'approve'],
+  [/\bpasses?\b/i,          'pass'],
+  [/\bendorses?\b/i,        'endorse'],
+  [/\bextends?\b/i,         'extend'],
+  [/\brenews?\b/i,          'renew'],
+  [/\bfiles?\b/i,           'file'],
+  [/\bsues?\b/i,            'sue'],
+  [/\bmerges?\b/i,          'merge'],
+  [/\bacquires?\b/i,        'acquire'],
+  // Rate changes
+  [/\bcuts?\b/i,            'cut'],
+  [/\bslashes?\b/i,         'slash'],
+  [/\braises?\b/i,          'raise'],
+  [/\bhikes?\b/i,           'hike'],
+  [/\bincreases?\b/i,       'increase'],
+  // People / exits
+  [/\bresigns?\b/i,         'resign'],
+  [/\bquits?\b/i,           'quit'],
+  [/\breturns?\b/i,         'return'],
+  // Earnings / box office
+  [/\bmakes?\b/i,           'make'],
+  [/\bearns?\b/i,           'earn'],
+  [/\bcollects?\b/i,        'collect'],
+  // Misc
+  [/\bgets?\b/i,            'get'],
+  [/\btakes?\b/i,           'take'],
+  [/\bholds?\b/i,           'hold'],
+  [/\breceives?\b/i,        'receive'],
+  [/\bcomes?\b/i,           'come'],
+  [/\bgoes?\b/i,            'go'],
 ];
 
-// Build a specific YES/NO question from a headline, preserving proper nouns
+// Build a specific future-tense YES/NO question from a headline, preserving proper nouns.
+// Returns null if the headline can't be cleanly converted — no "last resort" present tense.
 function headlineToQuestion(raw: string): string | null {
   const h = cleanText(raw);
   if (!h || h.length < 12) return null;
   if (!isYesNoWorthy(h)) return null;
 
-  // Already ends with "?" — keep only if binary-answerable
+  // Already ends with "?" — keep only if binary-answerable (not open-ended)
   if (h.endsWith('?')) {
     const first = h.split(/\s+/)[0].toLowerCase();
     if (/^(who|what|how|why|where|when|which)$/i.test(first)) return null;
     return h.length > 90 ? h.slice(0, 87) + '…?' : h;
   }
 
-  // "X to [verb] ..." — already future-tense, just append "?"
-  if (/\bto\s+[a-z]/i.test(h) && h.split(' ').length <= 12) {
-    const q = h.length > 88 ? h.slice(0, 85) + '…' : h;
+  // "X to [verb] ..." — naturally future-tense ("India to host ICC final")
+  if (/\bto\s+[a-z]/i.test(h) && h.split(' ').length <= 13) {
+    const q = h.length > 90 ? h.slice(0, 87) + '…' : h;
     return q + '?';
   }
 
-  // Verb normalization — build "Will [exact subject] [infinitive] [exact rest]?"
+  // Verb-normalisation — "Will [exact subject] [infinitive] [exact rest]?"
+  // Scan word-by-word for a known verb, preserving ALL surrounding proper nouns.
   const words = h.split(/\s+/);
-  for (let i = 1; i < Math.min(words.length, 9); i++) {
-    for (const [pattern, infinitive] of VERB_NORMS) {
+  for (let i = 1; i < Math.min(words.length, 10); i++) {
+    for (const [pattern, infinitive] of VERB_MAP) {
       if (pattern.test(words[i])) {
         const subject = words.slice(0, i).join(' ');
         if (subject.length < 3) continue;
-        const afterVerb = words.slice(i + 1).join(' ');
-        const question = afterVerb.length > 3
-          ? `Will ${subject} ${infinitive} ${afterVerb}?`
+        const rest = words.slice(i + 1).join(' ');
+        const question = rest.length > 3
+          ? `Will ${subject} ${infinitive} ${rest}?`
           : `Will ${subject} ${infinitive}?`;
-        return question.length > 95 ? question.slice(0, 92) + '…?' : question;
+        return question.length > 98 ? question.slice(0, 95) + '…?' : question;
       }
     }
   }
 
-  // Last resort: short, declarative headline used as-is
-  const wc = words.length;
-  if (wc < 5 || wc > 13) return null;
-  const q = h.length > 88 ? h.slice(0, 85) + '…' : h;
-  return q + '?';
+  // No verb found → drop the headline rather than produce a present-tense question
+  return null;
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────

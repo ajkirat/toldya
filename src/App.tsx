@@ -113,27 +113,42 @@ export default function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openCount]);
 
-  // ── Hourly push notifications based on user's active-bet topics ───────────
+  // ── Notifications: on-mount check + hourly interval ──────────────────────
+  // Key: notifications fire when you OPEN the app (not just after 60 min open)
+  const NOTIF_KEY = 'toldya_last_notif';
+  const NOTIF_COOLDOWN = 60 * 60_000; // 1 hour
+
+  function maybeSendNotification() {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    const lastSent = parseInt(localStorage.getItem(NOTIF_KEY) ?? '0', 10);
+    if (Date.now() - lastSent < NOTIF_COOLDOWN) return;
+    const { bets, markets } = stateRef.current;
+    const topics = getActiveTopics(bets, markets);
+    sendTopicNotification(topics, bets, markets);
+    localStorage.setItem(NOTIF_KEY, String(Date.now()));
+  }
+
+  // Fire on mount (covers: "open app after an hour away")
+  useEffect(() => { maybeSendNotification(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fire on hourly interval (covers: "app left open all day")
   useEffect(() => {
-    const id = setInterval(() => {
-      if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-      const { bets, markets } = stateRef.current;
-      const topics = getActiveTopics(bets, markets);
-      sendTopicNotification(topics, bets, markets);
-    }, 60 * 60_000); // every hour
+    const id = setInterval(maybeSendNotification, NOTIF_COOLDOWN);
     return () => clearInterval(id);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Notification bell handler ──────────────────────────────────────────────
   async function handleEnableNotifications() {
     const perm = await requestNotificationPermission();
     setNotifPermission(perm);
     if (perm === 'granted') {
+      // Immediate confirmation notification
       new Notification('ToldYa notifications are ON! 🔔', {
-        body: "You'll get hourly alerts on your active predictions. Let's go!",
+        body: "You'll get alerts every time you open the app after an hour away.",
         icon: '/icons/icon-192.png',
         tag: 'toldya-welcome',
       });
+      localStorage.setItem(NOTIF_KEY, String(Date.now()));
     }
   }
 
