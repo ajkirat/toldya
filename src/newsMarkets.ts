@@ -2,7 +2,6 @@ import type { MarketDraft } from './gameEngine';
 import type { Market } from './types';
 
 // ── RSS proxy (allorigins = truly free, no rate limits) ───────────────────────
-// Returns { contents: "<xml>" }
 const PROXY = 'https://api.allorigins.win/get?url=';
 
 // ── 25 feeds across India + World ─────────────────────────────────────────────
@@ -76,9 +75,10 @@ async function fetchFeed(url: string): Promise<RSSItem[]> {
   return parseXML(json.contents ?? '');
 }
 
-// ── Static MCQ / range templates with real current names ─────────────────────
+// ── Static MCQ / range templates — all use REAL current names ────────────────
+// Only include templates where options are stable facts (teams, drivers, countries).
+// Never use generic placeholders.
 const MCQ_TEMPLATES: MarketDraft[] = [
-  // Sports
   {
     title: 'Who wins the IPL 2026 title?',
     description: 'IPL 2026 is underway. 10 franchises battle for the trophy. Mumbai Indians are the defending champions.',
@@ -106,7 +106,6 @@ const MCQ_TEMPLATES: MarketDraft[] = [
     aiPredictedOption: 0, aiPrediction: 0.33,
     yesPool: 0, noPool: 0,
   },
-  // Finance range
   {
     title: 'Where does Bitcoin close this week?',
     description: 'BTC volatile amid macro uncertainty. Institutional ETF flows remain strong but sentiment is mixed.',
@@ -125,26 +124,6 @@ const MCQ_TEMPLATES: MarketDraft[] = [
     aiPredictedOption: 1, aiPrediction: 0.4,
     yesPool: 0, noPool: 0,
   },
-  // Entertainment
-  {
-    title: 'Which film tops the Indian box office this weekend?',
-    description: 'Three major releases competing this weekend — Bollywood, Tollywood and a Hollywood tentpole.',
-    category: 'entertainment', type: 'mcq',
-    options: ['Bollywood action release', 'Allu Arjun\'s new film', 'Hollywood blockbuster', 'Indie surprise'],
-    optionPools: [7100, 8400, 4200, 1800],
-    aiPredictedOption: 1, aiPrediction: 0.39,
-    yesPool: 0, noPool: 0,
-  },
-  {
-    title: 'Oscar Best Picture 2027 frontrunner?',
-    description: 'Early awards season buzz. Films from Villeneuve, Nolan and Scorsese generating heat.',
-    category: 'entertainment', type: 'mcq',
-    options: ['Denis Villeneuve\'s new film', 'Christopher Nolan\'s project', 'Martin Scorsese\'s drama', 'A24 dark horse'],
-    optionPools: [6200, 7100, 5400, 3800],
-    aiPredictedOption: 1, aiPrediction: 0.36,
-    yesPool: 0, noPool: 0,
-  },
-  // Platform
   {
     title: 'Which country wins the most gold at the 2026 Asian Games?',
     description: 'The 2026 Asian Games in Nagoya, Japan. China, Japan, South Korea and India all strong.',
@@ -185,7 +164,7 @@ function isYesNoWorthy(raw: string): boolean {
   return true;
 }
 
-// Each verb maps to its own correct infinitive (no grouping — avoids "hits" → "cross" bugs)
+// Each verb maps to its own correct infinitive
 const VERB_MAP: [RegExp, string][] = [
   // Sports / competition
   [/\bbeats?\b/i,           'beat'],
@@ -279,28 +258,27 @@ const VERB_MAP: [RegExp, string][] = [
   [/\bgoes?\b/i,            'go'],
 ];
 
-// Build a specific future-tense YES/NO question from a headline, preserving proper nouns.
-// Returns null if the headline can't be cleanly converted — no "last resort" present tense.
+// Build a future-tense YES/NO question from a headline, preserving proper nouns.
+// Returns null if the headline can't be cleanly converted.
 function headlineToQuestion(raw: string): string | null {
   const h = cleanText(raw);
   if (!h || h.length < 12) return null;
   if (!isYesNoWorthy(h)) return null;
 
-  // Already ends with "?" — keep only if binary-answerable (not open-ended)
+  // Already ends with "?" — keep only if binary-answerable
   if (h.endsWith('?')) {
     const first = h.split(/\s+/)[0].toLowerCase();
     if (/^(who|what|how|why|where|when|which)$/i.test(first)) return null;
     return h.length > 90 ? h.slice(0, 87) + '…?' : h;
   }
 
-  // "X to [verb] ..." — naturally future-tense ("India to host ICC final")
+  // "X to [verb] ..." — naturally future-tense
   if (/\bto\s+[a-z]/i.test(h) && h.split(' ').length <= 13) {
     const q = h.length > 90 ? h.slice(0, 87) + '…' : h;
     return q + '?';
   }
 
   // Verb-normalisation — "Will [exact subject] [infinitive] [exact rest]?"
-  // Scan word-by-word for a known verb, preserving ALL surrounding proper nouns.
   const words = h.split(/\s+/);
   for (let i = 1; i < Math.min(words.length, 10); i++) {
     for (const [pattern, infinitive] of VERB_MAP) {
@@ -316,8 +294,115 @@ function headlineToQuestion(raw: string): string | null {
     }
   }
 
-  // No verb found → drop the headline rather than produce a present-tense question
   return null;
+}
+
+// ── Dynamic MCQ builder ───────────────────────────────────────────────────────
+// Extract the proper-noun SUBJECT from a headline (the entity before the first verb).
+// This gives us real names: "Pushpa 2", "Virat Kohli", "Reliance Industries", etc.
+function extractSubjectEntity(headline: string): string | null {
+  const h = cleanText(headline);
+  if (!h) return null;
+  const words = h.split(/\s+/);
+
+  for (let i = 1; i < Math.min(words.length, 9); i++) {
+    for (const [pattern] of VERB_MAP) {
+      if (pattern.test(words[i])) {
+        const candidate = words.slice(0, i).join(' ');
+        if (
+          /^[A-Z]/.test(candidate) &&          // must start with capital
+          candidate.length >= 2 &&
+          candidate.length <= 50 &&
+          // filter bare articles / pronouns
+          !/^(The|A|An|It|He|She|They|We|I|This|That|Its|His|Her|Their|Our)$/i.test(candidate) &&
+          // filter pure numbers / currency strings
+          !/^[\d₹$€£]/.test(candidate)
+        ) {
+          return candidate;
+        }
+        return null; // verb found but subject not usable
+      }
+    }
+  }
+  return null;
+}
+
+// Build a smart MCQ question whose options are real entities from the news
+function buildDynamicMCQ(
+  entities: string[],
+  category: Market['category']
+): MarketDraft | null {
+  const opts = entities.slice(0, 4);
+  if (opts.length < 3) return null;
+
+  const joined = opts.join(' ').toLowerCase();
+
+  // Detect entity type from known name patterns
+  const isCricketer = /\b(sharma|kohli|rohit|virat|bumrah|dhoni|pandya|rahul|gill|jaiswal|pant|jadeja|siraj|ashwin|shami|hardik|yuzvendra|axar)\b/.test(joined);
+  const isDriver = /\b(verstappen|norris|hamilton|leclerc|russell|sainz|alonso|perez|piastri)\b/.test(joined);
+  const isSportsPerson = isCricketer || isDriver ||
+    /\b(stokes|root|warner|cummins|babar|williamson|mbappe|haaland|salah|ronaldo|messi|djokovic|nadal|federer|serena)\b/.test(joined);
+
+  const isIPLTeam = /\b(indians?|super kings?|challengers?|knight riders?|royals?|capitals?|titans?|giants?|sunrisers?)\b/.test(joined);
+  const isFootballClub = /\b(madrid|arsenal|city|liverpool|chelsea|barcelona|juventus|milan|bayern|spurs|united|dortmund)\b/.test(joined);
+  const isTeam = isIPLTeam || isFootballClub ||
+    /\b(india|australia|england|pakistan|newzealand|southafrica|srilanka|bangladesh|westindies|zimbabwe)\b/.test(joined);
+
+  const isStock = /\b(infosys|tcs|wipro|hcl|reliance|adani|tata|bajaj|icici|hdfc|sbi|mahindra|zomato|paytm|nykaa|ola|byju|flipkart)\b/.test(joined);
+  const isCrypto = /\b(bitcoin|btc|ethereum|eth|solana|ripple|xrp|bnb|dogecoin)\b/.test(joined);
+
+  let question: string;
+  let description: string;
+
+  if (category === 'sports') {
+    if (isSportsPerson) {
+      question = 'Who delivers the standout performance in sport this week?';
+      description = `All eyes on ${opts.join(', ')} as they compete. Who rises to the occasion?`;
+    } else if (isTeam) {
+      question = 'Which team wins their upcoming fixture?';
+      description = `Upcoming clashes: ${opts.join(', ')} — all in action this week.`;
+    } else {
+      question = 'Which of these dominates the sports headlines this week?';
+      description = `In focus: ${opts.join(', ')}.`;
+    }
+  } else if (category === 'entertainment') {
+    if (isSportsPerson) {
+      // celebrities misclassified — still real names
+      question = 'Which celebrity dominates entertainment headlines this week?';
+      description = `${opts.join(', ')} — all making waves in entertainment news.`;
+    } else {
+      // Likely film titles extracted from box-office / collection / review headlines
+      question = 'Which film leads the box office this weekend?';
+      description = `Competing for the top spot: ${opts.join(', ')}.`;
+    }
+  } else if (category === 'finance') {
+    if (isStock) {
+      question = 'Which stock outperforms the market this week?';
+      description = `In play: ${opts.join(', ')}. Earnings, FII activity, and macro cues in focus.`;
+    } else if (isCrypto) {
+      question = 'Which crypto asset sees the biggest weekly move?';
+      description = `Tracking: ${opts.join(', ')} amid current macro sentiment.`;
+    } else {
+      question = 'Which sees the biggest market move this week?';
+      description = `Watch: ${opts.join(', ')}.`;
+    }
+  } else {
+    question = 'Which story leads the headlines this week?';
+    description = `Top stories: ${opts.join(', ')}.`;
+  }
+
+  return {
+    title: question,
+    description,
+    category,
+    type: 'mcq',
+    options: opts,
+    optionPools: opts.map(() => Math.floor(Math.random() * 8000) + 4000),
+    aiPredictedOption: Math.floor(Math.random() * opts.length),
+    aiPrediction: parseFloat((0.25 + Math.random() * 0.35).toFixed(2)),
+    yesPool: 0,
+    noPool: 0,
+  };
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
@@ -331,7 +416,10 @@ export async function fetchNewsMarkets(): Promise<MarketDraft[]> {
 
   const binaryDrafts: MarketDraft[] = [];
 
-  // Dedup within this batch (no two questions sharing 3+ significant words)
+  // Per-category entity buckets for dynamic MCQ building
+  const entitiesByCategory: Partial<Record<Market['category'], string[]>> = {};
+
+  // Dedup within binary batch (no two questions sharing 3+ significant words)
   const usedWordSets: Set<string>[] = [];
   function isTooSimilar(q: string): boolean {
     const sig = new Set(
@@ -349,25 +437,52 @@ export async function fetchNewsMarkets(): Promise<MarketDraft[]> {
   for (const result of results) {
     if (result.status !== 'fulfilled') continue;
     const { items, category } = result.value;
+
     for (const item of items) {
-      if (binaryDrafts.length >= 16) break;
       if (!item.title) continue;
-      const question = headlineToQuestion(item.title);
-      if (!question) continue;
-      if (isTooSimilar(question)) continue;
-      binaryDrafts.push({
-        title:        question,
-        description:  cleanText(item.description || item.title).slice(0, 180),
-        category:     detectCategory(item.title, category),
-        type:         'binary',
-        yesPool:      Math.floor(Math.random() * 9_000) + 5_000,
-        noPool:       Math.floor(Math.random() * 7_000) + 4_000,
-        aiPrediction: parseFloat((0.30 + Math.random() * 0.40).toFixed(2)),
-      });
+
+      // ── Binary question from this headline ────────────────────
+      if (binaryDrafts.length < 16) {
+        const question = headlineToQuestion(item.title);
+        if (question && !isTooSimilar(question)) {
+          binaryDrafts.push({
+            title:        question,
+            description:  cleanText(item.description || item.title).slice(0, 180),
+            category:     detectCategory(item.title, category),
+            type:         'binary',
+            yesPool:      Math.floor(Math.random() * 9_000) + 5_000,
+            noPool:       Math.floor(Math.random() * 7_000) + 4_000,
+            aiPrediction: parseFloat((0.30 + Math.random() * 0.40).toFixed(2)),
+          });
+        }
+      }
+
+      // ── Extract entity for dynamic MCQ ────────────────────────
+      const entity = extractSubjectEntity(item.title);
+      if (entity) {
+        if (!entitiesByCategory[category]) entitiesByCategory[category] = [];
+        const arr = entitiesByCategory[category]!;
+        // keep unique entities only, max 6 per category
+        if (!arr.includes(entity) && arr.length < 6) arr.push(entity);
+      }
     }
   }
 
-  // Pick 3 random MCQ/range templates to mix in
-  const shuffled = [...MCQ_TEMPLATES].sort(() => Math.random() - 0.5).slice(0, 3);
-  return [...binaryDrafts, ...shuffled];
+  // ── Build dynamic MCQs from extracted real entities ───────────────────────
+  // Prefer sports → entertainment → finance for variety
+  const dynamicMCQs: MarketDraft[] = [];
+  const categoryOrder: Market['category'][] = ['sports', 'entertainment', 'finance', 'platform'];
+
+  for (const cat of categoryOrder) {
+    if (dynamicMCQs.length >= 2) break;
+    const entities = entitiesByCategory[cat];
+    if (!entities || entities.length < 3) continue;
+    const mcq = buildDynamicMCQ(entities, cat);
+    if (mcq) dynamicMCQs.push(mcq);
+  }
+
+  // Mix in 2 static templates that have proven real names (teams, drivers, countries)
+  const shuffledStatic = [...MCQ_TEMPLATES].sort(() => Math.random() - 0.5).slice(0, 2);
+
+  return [...binaryDrafts, ...dynamicMCQs, ...shuffledStatic];
 }
