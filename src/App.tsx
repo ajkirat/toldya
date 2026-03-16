@@ -1,5 +1,5 @@
-import GameApp from './GameApp';
+import RantApp from './RantApp';
 
 export default function App() {
-  return <GameApp />;
+  return <RantApp />;
 }

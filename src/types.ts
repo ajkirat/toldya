@@ -1,76 +1,59 @@
-export type MarketCategory = 'sports' | 'finance' | 'weather' | 'entertainment' | 'platform';
-export type MarketStatus   = 'open' | 'resolved';
-export type BetSide        = 'yes' | 'no';
-export type MarketType     = 'binary' | 'mcq' | 'range';
-export type View           = 'home' | 'market' | 'profile' | 'leaderboard';
-export type Confidence     = 'low' | 'normal' | 'high' | 'all-in';
+export type VoiceEffect = 'none' | 'm1' | 'm2' | 'm3' | 'f1' | 'f2' | 'f3';
+export type ReactionKey = 'relatable' | 'funny' | 'problem' | 'accurate';
+export type View = 'feed' | 'record' | 'battles' | 'leaderboard' | 'profile';
+export type RantCategory = 'all' | 'work' | 'life' | 'tech' | 'politics' | 'sports' | 'relationships';
+
+export interface Rant {
+  id: string;
+  author: string;
+  title: string;
+  audioBase64?: string;   // undefined for bot rants
+  duration: number;       // seconds
+  category: RantCategory;
+  timestamp: number;      // unix ms
+  reactions: Record<ReactionKey, number>;
+  voiceEffect: VoiceEffect;
+  isBot: boolean;
+}
 
 export interface User {
   username: string;
-  coins: number;
-  streak: number;
-  bestStreak: number;
-  lastActiveDate: string;      // YYYY-MM-DD
-  lastDailyBonusDate: string;  // YYYY-MM-DD
-  correctPredictions: number;
-  totalPredictions: number;
-  totalProfit: number;
+  rantsPosted: number;
+  reactionsReceived: number;
+  battlesWon: number;
+  totalVotesReceived: number;
 }
 
-export interface Market {
+export interface RantBattle {
   id: string;
-  title: string;
-  description: string;
-  category: MarketCategory;
-  type: MarketType;
-  closeTime: number;               // unix ms
-  status: MarketStatus;
-  aiPrediction: number;            // 0–1: for binary = P(YES); for mcq/range = index of predicted winner / options.length
-  aiPredictedOption?: number;      // explicit index for mcq/range
-  resolvedAt: number | null;
-
-  // ── Binary ──────────────────────────────────────────────────
-  yesPool: number;
-  noPool: number;
-  outcome: 'yes' | 'no' | null;
-  predeterminedOutcome: 'yes' | 'no';
-
-  // ── MCQ / Range ─────────────────────────────────────────────
-  options?: string[];              // option labels (3-4 entries)
-  optionPools?: number[];          // pool per option
-  predeterminedOptionIdx?: number; // winning option index (set at creation)
-}
-
-export interface Bet {
-  id: string;
-  marketId: string;
-  marketTitle: string;
-  side: BetSide;        // 'yes'/'no' for binary; 'yes' placeholder for mcq/range
-  optionIdx?: number;   // index into market.options for mcq/range bets
-  optionLabel?: string; // display label for the option chosen
-  amount: number;
-  confidence: Confidence;
-  timestamp: number;
-  probAtBet: number;    // percentage 0-100 of chosen side/option at bet time
-  payout: number | null;
-  profit: number | null;
-  resolved: boolean;
-  legendary?: boolean;  // true if underdog win (probAtBet < 30%)
+  rantAId: string;
+  rantBId: string;
+  votesA: number;
+  votesB: number;
+  userVote: 'a' | 'b' | null;
 }
 
 export interface Toast {
   message: string;
-  type: 'win' | 'loss' | 'info' | 'bonus' | 'legendary';
+  type: 'success' | 'info' | 'fire';
 }
 
 export interface GameState {
   user: User | null;
-  markets: Market[];
-  bets: Bet[];
+  rants: Rant[];
+  battles: RantBattle[];
   view: View;
-  selectedMarketId: string | null;
-  showUsernameModal: boolean;
-  showDailyBonus: boolean;
-  dailyBonusAmount: number;
+  filter: RantCategory;
   toast: Toast | null;
+  showUsernameModal: boolean;
+  userReactions: Record<string, ReactionKey[]>; // rantId → reactions user has toggled on
 }
+
+export type Action =
+  | { type: 'INIT_USER'; username: string }
+  | { type: 'PLACE_REACTION'; rantId: string; reaction: ReactionKey }
+  | { type: 'POST_RANT'; rant: Omit<Rant, 'id' | 'timestamp' | 'reactions' | 'isBot'> }
+  | { type: 'VOTE_BATTLE'; battleId: string; side: 'a' | 'b' }
+  | { type: 'NAVIGATE'; view: View }
+  | { type: 'SET_FILTER'; filter: RantCategory }
+  | { type: 'DISMISS_TOAST' };

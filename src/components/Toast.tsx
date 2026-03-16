@@ -1,13 +1,10 @@
 import { useEffect } from 'react';
-import type { Toast as ToastType } from '../types';
-import type { Action } from '../gameEngine';
+import type { Toast as ToastType, Action } from '../types';
 
 const ICONS: Record<ToastType['type'], string> = {
-  win:       '🎉',
-  loss:      '💸',
-  info:      'ℹ️',
-  bonus:     '🎁',
-  legendary: '🏆',
+  fire:    '🔥',
+  success: '✅',
+  info:    'ℹ️',
 };
 
 interface Props {
@@ -17,8 +14,8 @@ interface Props {
 
 export default function Toast({ toast, dispatch }: Props) {
   useEffect(() => {
-    const timer = setTimeout(() => dispatch({ type: 'DISMISS_TOAST' }), 3500);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => dispatch({ type: 'DISMISS_TOAST' }), 3500);
+    return () => clearTimeout(t);
   }, [toast, dispatch]);
 
   return (
