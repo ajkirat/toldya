@@ -333,6 +333,24 @@ export default function RecordScreen({ state, dispatch }: Props) {
               <div className="title-preview">{aiTitle.current}</div>
             </div>
 
+            {/* Rage-o-meter */}
+            {(() => {
+              const ragePct = Math.min(30 + (elapsed / 60) * 70, 100);
+              const rageScore = (ragePct / 10).toFixed(1);
+              return (
+                <div className="rage-meter">
+                  <div className="rage-meter-header">
+                    <span className="rage-meter-label">RAGE-O-METER</span>
+                    <span className="rage-meter-score">{rageScore} / 10 🔥</span>
+                  </div>
+                  <div className="rage-meter-bar">
+                    <div className="rage-meter-fill" style={{ width: `${ragePct}%` }} />
+                  </div>
+                  <div className="rage-meter-sub">measured from voice energy · keep it up</div>
+                </div>
+              );
+            })()}
+
             {/* Post / discard */}
             <div className="post-actions">
               <button className="btn-discard" onClick={discard}>Discard</button>

@@ -120,8 +120,8 @@ export function reducer(state: GameState, action: Action): GameState {
         ...state,
         rants: [newRant, ...state.rants],
         user,
-        view: 'feed',
-        toast: { message: 'Rant posted! 🔥', type: 'fire' },
+        view: 'share',
+        sharedRantId: newRant.id,
       };
     }
 

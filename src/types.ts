@@ -1,6 +1,6 @@
 export type VoiceEffect = 'none' | 'm1' | 'm2' | 'm3' | 'f1' | 'f2' | 'f3';
 export type ReactionKey = 'relatable' | 'funny' | 'problem' | 'accurate';
-export type View = 'feed' | 'record' | 'battles' | 'leaderboard' | 'profile';
+export type View = 'feed' | 'record' | 'battles' | 'leaderboard' | 'profile' | 'share';
 export type RantCategory = 'all' | 'work' | 'life' | 'tech' | 'politics' | 'sports' | 'relationships';
 
 export interface Rant {
@@ -47,6 +47,7 @@ export interface GameState {
   toast: Toast | null;
   showUsernameModal: boolean;
   userReactions: Record<string, ReactionKey[]>; // rantId → reactions user has toggled on
+  sharedRantId?: string;
 }
 
 export type Action =

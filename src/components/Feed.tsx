@@ -14,6 +14,21 @@ const CATEGORIES: { key: RantCategory; label: string }[] = [
   { key: 'relationships', label: '💔 Relationships' },
 ];
 
+const TICKER_ITEMS = [
+  '😤 slow walkers in corridors',
+  '🚗 indicators are literally free',
+  '✈️ plane clappers are at it again',
+  '☕ microwave fish at the office',
+  '🛒 12 items in the 10-item lane',
+  '📱 speakerphone on public transport',
+  '🔔 reply-all email chains',
+  '🎵 no headphones in quiet carriages',
+  '🚰 leaving empty mugs in the sink',
+  '🖨️ printer jams at deadline time',
+];
+
+const TICKER_DOUBLED = [...TICKER_ITEMS, ...TICKER_ITEMS];
+
 interface Props {
   state: GameState;
   dispatch: (a: Action) => void;
@@ -30,6 +45,15 @@ export default function Feed({ state, dispatch }: Props) {
       <div className="feed-header">
         <div className="app-wordmark">ran<span>tr</span></div>
         <div className="app-tagline">tiny rage. big community.</div>
+      </div>
+
+      {/* Live ticker */}
+      <div className="live-ticker">
+        <div className="ticker-inner">
+          {TICKER_DOUBLED.map((item, i) => (
+            <span key={i} className="ticker-item">{item}</span>
+          ))}
+        </div>
       </div>
 
       {/* Category filter */}
@@ -83,6 +107,19 @@ export default function Feed({ state, dispatch }: Props) {
           ))}
         </div>
       )}
+
+      {/* FAB — record shortcut */}
+      <button
+        className="feed-fab"
+        onClick={() => {
+          haptic('medium');
+          sfxFab();
+          dispatch({ type: 'NAVIGATE', view: 'record' });
+        }}
+        aria-label="Record a rant"
+      >
+        😤
+      </button>
     </div>
   );
 }
