@@ -1,7 +1,7 @@
 import type { GameState, Action, RantCategory } from '../types';
 import { DAILY_PROMPTS } from '../rantData';
 import { haptic } from '../rantEngine';
-import { sfxFab } from '../sfx';
+import { sfxFab, sfxNav } from '../sfx';
 import RantCard from './RantCard';
 
 const CATEGORIES: { key: RantCategory; label: string }[] = [
@@ -27,7 +27,10 @@ export default function Feed({ state, dispatch }: Props) {
 
   return (
     <div className="screen">
-      <div className="feed-header">ran<span>tr</span></div>
+      <div className="feed-header">
+        <div className="app-wordmark">ran<span>tr</span></div>
+        <div className="app-tagline">tiny rage. big community.</div>
+      </div>
 
       {/* Category filter */}
       <div className="category-tabs">
@@ -35,7 +38,11 @@ export default function Feed({ state, dispatch }: Props) {
           <button
             key={c.key}
             className={`cat-tab ${state.filter === c.key ? 'active' : ''}`}
-            onClick={() => dispatch({ type: 'SET_FILTER', filter: c.key })}
+            onClick={() => {
+              haptic('light');
+              sfxNav();
+              dispatch({ type: 'SET_FILTER', filter: c.key });
+            }}
           >
             {c.label}
           </button>

@@ -1,4 +1,4 @@
-// Pure Web Audio API sound effects — no external files
+// Pure Web Audio API sound effects — no external files, light-hearted & fun
 
 let _ctx: AudioContext | null = null;
 
@@ -25,81 +25,96 @@ function tone(
     osc.type = type;
     osc.frequency.setValueAtTime(freq, t);
     if (endFreq !== freq) osc.frequency.exponentialRampToValueAtTime(Math.max(endFreq, 1), t + duration);
-    gain.gain.setValueAtTime(startGain, t);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(startGain, t + 0.01);
     gain.gain.exponentialRampToValueAtTime(Math.max(endGain, 0.0001), t + duration);
     osc.connect(gain);
     gain.connect(c.destination);
     osc.start(t);
-    osc.stop(t + duration + 0.01);
+    osc.stop(t + duration + 0.02);
   } catch { /* ignore AudioContext errors */ }
 }
 
-// Rising pop — card expand
+// Cheerful rising pop — card tap to expand
 export function sfxExpand() {
-  tone(280, 560, 0.18, 0.001, 0.12, 'sine');
+  tone(320, 640, 0.22, 0.001, 0.14, 'sine');
+  tone(640, 960, 0.10, 0.001, 0.10, 'sine', 0.07);
 }
 
-// Descending whoosh — card close / dismiss
+// Soft descending whoosh — card close
 export function sfxDismiss() {
-  tone(520, 200, 0.15, 0.001, 0.14, 'sine');
+  tone(600, 220, 0.18, 0.001, 0.16, 'sine');
 }
 
-// Quick whoosh — swipe snooze
+// Quick swoosh — swipe
 export function sfxSnooze() {
-  tone(600, 150, 0.12, 0.001, 0.18, 'triangle');
+  tone(700, 140, 0.14, 0.001, 0.18, 'triangle');
 }
 
-// Ding per reaction type
+// Distinct ding per reaction — each one sounds different & fun
 export function sfxReaction(key: string) {
-  const freqs: Record<string, [number, number]> = {
-    relatable: [880, 1100],   // fire — warm ding
-    funny:     [660, 990],    // laugh — playful
-    problem:   [440, 330],    // facepalm — descending
-    accurate:  [740, 1480],   // target — rising
-  };
-  const [f, ef] = freqs[key] ?? [660, 880];
-  tone(f, ef, 0.2, 0.001, 0.18, 'sine');
+  switch (key) {
+    case 'relatable': // 🔥 warm double-ding
+      tone(880, 880, 0.22, 0.001, 0.12, 'sine');
+      tone(1100, 1100, 0.14, 0.001, 0.10, 'sine', 0.10);
+      break;
+    case 'funny': // 😂 playful bouncy
+      tone(660, 880, 0.20, 0.001, 0.08, 'sine');
+      tone(880, 660, 0.16, 0.001, 0.08, 'sine', 0.10);
+      tone(1100, 880, 0.12, 0.001, 0.08, 'sine', 0.20);
+      break;
+    case 'problem': // 🤦 descending thud
+      tone(520, 260, 0.24, 0.001, 0.18, 'triangle');
+      break;
+    case 'accurate': // 🎯 sharp rising ping
+      tone(740, 1480, 0.20, 0.001, 0.14, 'sine');
+      break;
+    default:
+      tone(660, 880, 0.18, 0.001, 0.14, 'sine');
+  }
 }
 
-// Double boop — FAB press
+// Friendly double-boop — FAB / record button press
 export function sfxFab() {
-  tone(440, 660, 0.2, 0.001, 0.1, 'sine');
-  tone(660, 880, 0.15, 0.001, 0.1, 'sine', 0.12);
+  tone(500, 750, 0.22, 0.001, 0.10, 'sine');
+  tone(750, 1000, 0.16, 0.001, 0.10, 'sine', 0.12);
 }
 
-// Soft click — nav tab
+// Gentle tick — nav tab switch
 export function sfxNav() {
-  tone(800, 800, 0.08, 0.001, 0.06, 'sine');
+  tone(900, 900, 0.10, 0.001, 0.07, 'sine');
 }
 
-// 3-note ascending fanfare — rant posted
+// Triumphant 3-note fanfare — rant posted 🎉
 export function sfxPost() {
-  tone(440, 440, 0.2, 0.001, 0.12, 'triangle');
-  tone(554, 554, 0.2, 0.001, 0.12, 'triangle', 0.14);
-  tone(660, 660, 0.25, 0.001, 0.18, 'triangle', 0.28);
+  tone(523, 523, 0.24, 0.001, 0.14, 'triangle');        // C5
+  tone(659, 659, 0.22, 0.001, 0.14, 'triangle', 0.16);  // E5
+  tone(784, 784, 0.28, 0.001, 0.22, 'triangle', 0.32);  // G5
 }
 
-// Tone toggle — play/pause
+// Subtle tone — play/pause toggle
 export function sfxPlayPause(playing: boolean) {
-  tone(playing ? 440 : 330, playing ? 440 : 330, 0.12, 0.001, 0.08, 'sine');
+  tone(playing ? 523 : 392, playing ? 523 : 392, 0.14, 0.001, 0.09, 'sine');
 }
 
 // Swipe tick — rant navigation
 export function sfxSwipe() {
-  tone(700, 700, 0.07, 0.001, 0.05, 'sine');
+  tone(750, 750, 0.08, 0.001, 0.05, 'sine');
 }
 
-// Thwack — battle vote
+// Satisfying impact — battle vote
 export function sfxVote() {
-  tone(200, 400, 0.3, 0.001, 0.15, 'square');
+  tone(180, 360, 0.32, 0.001, 0.12, 'square');
+  tone(360, 540, 0.18, 0.001, 0.10, 'triangle', 0.08);
 }
 
-// Triangle wave on — record start
+// Rising ready tone — record start
 export function sfxRecordStart() {
-  tone(220, 440, 0.15, 0.001, 0.2, 'triangle');
+  tone(330, 660, 0.18, 0.001, 0.18, 'triangle');
 }
 
-// Descending triangle — record stop
+// Satisfying completion — record stop
 export function sfxRecordStop() {
-  tone(440, 180, 0.18, 0.001, 0.2, 'triangle');
+  tone(660, 440, 0.20, 0.001, 0.14, 'triangle');
+  tone(440, 330, 0.14, 0.001, 0.12, 'triangle', 0.12);
 }

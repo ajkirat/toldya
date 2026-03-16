@@ -57,7 +57,6 @@ export default function RantRelay({ rant, userReactions, dispatch, onClose }: Pr
   function togglePlay() {
     haptic('light');
     sfxPlayPause(!playing);
-
     if (rant.audioBase64) {
       if (!audioRef.current) {
         audioRef.current = new Audio(rant.audioBase64);
@@ -89,8 +88,12 @@ export default function RantRelay({ rant, userReactions, dispatch, onClose }: Pr
     <div className="relay-overlay" onClick={close}>
       <div className="relay-card" onClick={e => e.stopPropagation()}>
         <div className="relay-drag-handle" />
+
+        {/* Close button — absolutely positioned, does NOT affect content centering */}
+        <button className="relay-close-btn" onClick={close}>✕</button>
+
+        {/* All content is centered relative to the FULL card width */}
         <div className="relay-exp-body">
-          {/* Author */}
           <div className="relay-author-row">
             <div className="relay-avatar">{initials}</div>
             <div>
@@ -99,10 +102,8 @@ export default function RantRelay({ rant, userReactions, dispatch, onClose }: Pr
             </div>
           </div>
 
-          {/* Title */}
           <div className="relay-title">{rant.title}</div>
 
-          {/* Waveform player */}
           <div className="relay-waveform-wrap">
             <button className={`play-btn ${playing ? 'playing' : ''}`} onClick={togglePlay}>
               {playing ? '⏸' : '▶'}
@@ -110,7 +111,6 @@ export default function RantRelay({ rant, userReactions, dispatch, onClose }: Pr
             <WaveformBars playing={playing} duration={rant.duration} />
           </div>
 
-          {/* Reactions */}
           <div className="relay-reactions">
             {REACTIONS.map(r => (
               <button
@@ -122,11 +122,6 @@ export default function RantRelay({ rant, userReactions, dispatch, onClose }: Pr
                 {formatCount(rant.reactions[r.key])}
               </button>
             ))}
-          </div>
-
-          {/* FABs */}
-          <div className="relay-fabs">
-            <button className="relay-fab close" onClick={close}>✕</button>
           </div>
         </div>
       </div>
