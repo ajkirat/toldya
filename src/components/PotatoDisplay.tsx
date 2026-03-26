@@ -12,7 +12,6 @@ export default function PotatoDisplay({ timeRemaining, totalTime }: Props) {
   else if (pct < 0.5) shakeClass = 'shake-md'
   else if (pct < 0.7) shakeClass = 'shake-sm'
 
-  const barColor = pct > 0.5 ? '#22c55e' : pct > 0.25 ? '#f59e0b' : '#ef4444'
   const danger = 1 - pct
   const filter = danger > 0.3
     ? `saturate(${100 + danger * 250}%) hue-rotate(${danger * -30}deg)`
@@ -23,13 +22,6 @@ export default function PotatoDisplay({ timeRemaining, totalTime }: Props) {
       <div className={`potato-emoji ${shakeClass}`} style={{ filter }}>
         🥔
       </div>
-      <div className="timer-track">
-        <div
-          className="timer-fill"
-          style={{ width: `${pct * 100}%`, backgroundColor: barColor }}
-        />
-      </div>
-      <div className="timer-label">{(timeRemaining / 1000).toFixed(1)}s</div>
     </div>
   )
 }
