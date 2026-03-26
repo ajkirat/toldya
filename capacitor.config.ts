@@ -2,8 +2,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   // Unique app ID — reverse domain notation (change 'ajink' to your name)
-  appId: 'com.ajink.toldya',
-  appName: 'ToldYa',
+  appId: 'com.ajink.hotpotato',
+  appName: 'Hot Potato',
 
   // Vite builds to 'dist/' — Capacitor reads from here
   webDir: 'dist',
@@ -22,7 +22,7 @@ const config: CapacitorConfig = {
   plugins: {
     SplashScreen: {
       launchShowDuration: 1000,
-      backgroundColor: '#0d1117',
+      backgroundColor: '#1a0a2e',
       androidSplashResourceName: 'splash',
       showSpinner: false,
     },

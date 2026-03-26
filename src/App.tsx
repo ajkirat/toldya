@@ -1,5 +1,5 @@
-import RantApp from './RantApp';
+import HotPotatoGame from './HotPotatoGame'
 
 export default function App() {
-  return <RantApp />;
+  return <HotPotatoGame />
 }

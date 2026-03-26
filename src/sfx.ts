@@ -1,13 +1,11 @@
-// Pure Web Audio API sound effects — no external files, light-hearted & fun
-
-let _ctx: AudioContext | null = null;
+let _ctx: AudioContext | null = null
 
 function ctx(): AudioContext {
   if (!_ctx) {
-    _ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    _ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
   }
-  if (_ctx.state === 'suspended') _ctx.resume();
-  return _ctx;
+  if (_ctx.state === 'suspended') _ctx.resume()
+  return _ctx
 }
 
 function tone(
@@ -18,103 +16,71 @@ function tone(
   delay = 0,
 ) {
   try {
-    const c = ctx();
-    const t = c.currentTime + delay;
-    const osc = c.createOscillator();
-    const gain = c.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t);
-    if (endFreq !== freq) osc.frequency.exponentialRampToValueAtTime(Math.max(endFreq, 1), t + duration);
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.linearRampToValueAtTime(startGain, t + 0.01);
-    gain.gain.exponentialRampToValueAtTime(Math.max(endGain, 0.0001), t + duration);
-    osc.connect(gain);
-    gain.connect(c.destination);
-    osc.start(t);
-    osc.stop(t + duration + 0.02);
+    const c = ctx()
+    const t = c.currentTime + delay
+    const osc = c.createOscillator()
+    const gain = c.createGain()
+    osc.type = type
+    osc.frequency.setValueAtTime(freq, t)
+    if (endFreq !== freq) osc.frequency.exponentialRampToValueAtTime(Math.max(endFreq, 1), t + duration)
+    gain.gain.setValueAtTime(0.0001, t)
+    gain.gain.linearRampToValueAtTime(startGain, t + 0.01)
+    gain.gain.exponentialRampToValueAtTime(Math.max(endGain, 0.0001), t + duration)
+    osc.connect(gain)
+    gain.connect(c.destination)
+    osc.start(t)
+    osc.stop(t + duration + 0.02)
   } catch { /* ignore AudioContext errors */ }
 }
 
-// Cheerful rising pop — card tap to expand
-export function sfxExpand() {
-  tone(320, 640, 0.22, 0.001, 0.14, 'sine');
-  tone(640, 960, 0.10, 0.001, 0.10, 'sine', 0.07);
+// Whoosh — potato passed between players
+export function playPass() {
+  tone(900, 220, 0.28, 0.001, 0.18, 'sine')
+  tone(450, 110, 0.16, 0.001, 0.15, 'triangle', 0.04)
 }
 
-// Soft descending whoosh — card close
-export function sfxDismiss() {
-  tone(600, 220, 0.18, 0.001, 0.16, 'sine');
+// Clock tick — rate increases as time runs out
+export function playTick() {
+  tone(1200, 1000, 0.13, 0.001, 0.05, 'square')
 }
 
-// Quick swoosh — swipe
-export function sfxSnooze() {
-  tone(700, 140, 0.14, 0.001, 0.18, 'triangle');
+// Big boom — potato explodes
+export function playExplosion() {
+  try {
+    const c = ctx()
+    const bufferSize = Math.floor(c.sampleRate * 0.8)
+    const buffer = c.createBuffer(1, bufferSize, c.sampleRate)
+    const data = buffer.getChannelData(0)
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 1.5)
+    }
+    const source = c.createBufferSource()
+    source.buffer = buffer
+    const noiseGain = c.createGain()
+    noiseGain.gain.setValueAtTime(1.8, c.currentTime)
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.8)
+    source.connect(noiseGain)
+    noiseGain.connect(c.destination)
+    source.start()
+  } catch { /* ignore */ }
+  tone(80, 40, 0.6, 0.001, 0.7, 'sine')
+  tone(200, 60, 0.35, 0.001, 0.45, 'sawtooth', 0.05)
 }
 
-// Distinct ding per reaction — each one sounds different & fun
-export function sfxReaction(key: string) {
-  switch (key) {
-    case 'relatable': // 🔥 warm double-ding
-      tone(880, 880, 0.22, 0.001, 0.12, 'sine');
-      tone(1100, 1100, 0.14, 0.001, 0.10, 'sine', 0.10);
-      break;
-    case 'funny': // 😂 playful bouncy
-      tone(660, 880, 0.20, 0.001, 0.08, 'sine');
-      tone(880, 660, 0.16, 0.001, 0.08, 'sine', 0.10);
-      tone(1100, 880, 0.12, 0.001, 0.08, 'sine', 0.20);
-      break;
-    case 'problem': // 🤦 descending thud
-      tone(520, 260, 0.24, 0.001, 0.18, 'triangle');
-      break;
-    case 'accurate': // 🎯 sharp rising ping
-      tone(740, 1480, 0.20, 0.001, 0.14, 'sine');
-      break;
-    default:
-      tone(660, 880, 0.18, 0.001, 0.14, 'sine');
+// Ascending fanfare — match winner
+export function playWin() {
+  const notes = [523, 659, 784, 1047] // C E G C
+  notes.forEach((freq, i) => {
+    tone(freq, freq, 0.3, 0.001, 0.28, 'triangle', i * 0.14)
+  })
+}
+
+// Countdown beep
+export function playCountdown(isGo: boolean) {
+  if (isGo) {
+    tone(880, 880, 0.3, 0.001, 0.2, 'sine')
+    tone(1100, 1100, 0.25, 0.001, 0.3, 'sine', 0.1)
+  } else {
+    tone(440, 440, 0.22, 0.001, 0.12, 'sine')
   }
-}
-
-// Friendly double-boop — FAB / record button press
-export function sfxFab() {
-  tone(500, 750, 0.22, 0.001, 0.10, 'sine');
-  tone(750, 1000, 0.16, 0.001, 0.10, 'sine', 0.12);
-}
-
-// Gentle tick — nav tab switch
-export function sfxNav() {
-  tone(900, 900, 0.10, 0.001, 0.07, 'sine');
-}
-
-// Triumphant 3-note fanfare — rant posted 🎉
-export function sfxPost() {
-  tone(523, 523, 0.24, 0.001, 0.14, 'triangle');        // C5
-  tone(659, 659, 0.22, 0.001, 0.14, 'triangle', 0.16);  // E5
-  tone(784, 784, 0.28, 0.001, 0.22, 'triangle', 0.32);  // G5
-}
-
-// Subtle tone — play/pause toggle
-export function sfxPlayPause(playing: boolean) {
-  tone(playing ? 523 : 392, playing ? 523 : 392, 0.14, 0.001, 0.09, 'sine');
-}
-
-// Swipe tick — rant navigation
-export function sfxSwipe() {
-  tone(750, 750, 0.08, 0.001, 0.05, 'sine');
-}
-
-// Satisfying impact — battle vote
-export function sfxVote() {
-  tone(180, 360, 0.32, 0.001, 0.12, 'square');
-  tone(360, 540, 0.18, 0.001, 0.10, 'triangle', 0.08);
-}
-
-// Rising ready tone — record start
-export function sfxRecordStart() {
-  tone(330, 660, 0.18, 0.001, 0.18, 'triangle');
-}
-
-// Satisfying completion — record stop
-export function sfxRecordStop() {
-  tone(660, 440, 0.20, 0.001, 0.14, 'triangle');
-  tone(440, 330, 0.14, 0.001, 0.12, 'triangle', 0.12);
 }

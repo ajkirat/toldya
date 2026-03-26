@@ -1,60 +1,28 @@
-export type VoiceEffect = 'none' | 'm1' | 'm2' | 'm3' | 'f1' | 'f2' | 'f3';
-export type ReactionKey = 'relatable' | 'funny' | 'problem' | 'accurate';
-export type View = 'feed' | 'record' | 'battles' | 'leaderboard' | 'profile' | 'share';
-export type RantCategory = 'all' | 'work' | 'life' | 'tech' | 'politics' | 'sports' | 'relationships';
-
-export interface Rant {
-  id: string;
-  author: string;
-  title: string;
-  audioBase64?: string;   // undefined for bot rants
-  duration: number;       // seconds
-  category: RantCategory;
-  timestamp: number;      // unix ms
-  reactions: Record<ReactionKey, number>;
-  voiceEffect: VoiceEffect;
-  isBot: boolean;
-}
-
-export interface User {
-  username: string;
-  rantsPosted: number;
-  reactionsReceived: number;
-  battlesWon: number;
-  totalVotesReceived: number;
-}
-
-export interface RantBattle {
-  id: string;
-  rantAId: string;
-  rantBId: string;
-  votesA: number;
-  votesB: number;
-  userVote: 'a' | 'b' | null;
-}
-
-export interface Toast {
-  message: string;
-  type: 'success' | 'info' | 'fire';
-}
+export type Screen = 'menu' | 'countdown' | 'playing' | 'roundOver' | 'gameOver'
+export type Player = 0 | 1
 
 export interface GameState {
-  user: User | null;
-  rants: Rant[];
-  battles: RantBattle[];
-  view: View;
-  filter: RantCategory;
-  toast: Toast | null;
-  showUsernameModal: boolean;
-  userReactions: Record<string, ReactionKey[]>; // rantId → reactions user has toggled on
-  sharedRantId?: string;
+  screen: Screen
+  scores: [number, number]
+  currentHolder: Player
+  timeRemaining: number
+  totalTime: number
+  round: number
+  roundLoser: Player | null
+  matchWinner: Player | null
+  countdownValue: number
 }
 
-export type Action =
-  | { type: 'INIT_USER'; username: string }
-  | { type: 'PLACE_REACTION'; rantId: string; reaction: ReactionKey }
-  | { type: 'POST_RANT'; rant: Omit<Rant, 'id' | 'timestamp' | 'reactions' | 'isBot'> }
-  | { type: 'VOTE_BATTLE'; battleId: string; side: 'a' | 'b' }
-  | { type: 'NAVIGATE'; view: View }
-  | { type: 'SET_FILTER'; filter: RantCategory }
-  | { type: 'DISMISS_TOAST' };
+export type GameAction =
+  | { type: 'START_GAME' }
+  | { type: 'COUNTDOWN_TICK' }
+  | { type: 'PASS_POTATO'; player: Player }
+  | { type: 'TICK'; delta: number }
+  | { type: 'EXPLODE' }
+  | { type: 'NEXT_ROUND' }
+  | { type: 'PLAY_AGAIN' }
+
+export const WINS_REQUIRED = 3
+export const INITIAL_TIME = 8000   // ms
+export const TIME_REDUCTION = 600  // ms per round
+export const MIN_TIME = 2500       // ms minimum
