@@ -10,6 +10,7 @@ import Battles from './components/Battles';
 import Leaderboard from './components/Leaderboard';
 import Profile from './components/Profile';
 import ShareCard from './components/ShareCard';
+import HeistGame from './components/HeistGame';
 
 const STORAGE_KEY = 'rantr_v1';
 
@@ -53,6 +54,7 @@ export default function RantApp() {
       {state.view === 'battles'     && <Battles     state={state} dispatch={stableDispatch} />}
       {state.view === 'leaderboard' && <Leaderboard state={state} dispatch={stableDispatch} />}
       {state.view === 'profile'     && <Profile     state={state} dispatch={stableDispatch} />}
+      {state.view === 'heist'       && <HeistGame />}
       {state.view === 'share' && state.sharedRantId && (
         <ShareCard
           rant={state.rants.find(r => r.id === state.sharedRantId)!}

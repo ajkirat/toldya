@@ -1396,3 +1396,448 @@ input  { font: inherit; color: inherit; }
   pointer-events: none;
   z-index: 5;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   HEIST GAME
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Base screen ──────────────────────────────────────────────────────────── */
+.heist-screen {
+  position: relative;
+  background: #090918;
+  color: #fff;
+  overflow: hidden;
+}
+
+.heist-bg-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(80,80,200,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(80,80,200,0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+  z-index: 0;
+}
+.heist-screen > * { position: relative; z-index: 1; }
+
+/* ── Canvas ───────────────────────────────────────────────────────────────── */
+.heist-canvas {
+  width: min(200px, 54vw);
+  height: min(200px, 54vw);
+  display: block;
+}
+
+/* ── MENU ─────────────────────────────────────────────────────────────────── */
+.heist-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 20px 24px;
+  height: 100%;
+  justify-content: center;
+}
+
+.heist-logo { text-align: center; }
+.heist-crown { font-size: 2.4rem; display: block; animation: heist-float 2s ease-in-out infinite; }
+@keyframes heist-float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+.heist-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3.8rem;
+  letter-spacing: 6px;
+  color: #ffd700;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(255,215,0,0.5), 3px 3px 0 #333;
+}
+.heist-tagline {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 1px;
+}
+
+.heist-dial-preview-wrap { text-align: center; }
+.heist-dial-hint {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.65rem;
+  color: #11cc55;
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+}
+
+.heist-hs-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255,215,0,0.1);
+  border: 1.5px solid rgba(255,215,0,0.4);
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: #ffd700;
+}
+.heist-hs-row strong {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+}
+
+.heist-legend {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  max-width: 320px;
+}
+.heist-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+}
+.heist-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,0.3);
+}
+.heist-dot.green  { background: #11cc55; }
+.heist-dot.yellow { background: #f5c000; }
+.heist-dot.red    { background: #bb1111; }
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+.heist-btn-primary {
+  width: 100%;
+  max-width: 320px;
+  padding: 16px;
+  border-radius: 14px;
+  background: #ffd700;
+  color: #111;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 3px;
+  border: 3px solid #111;
+  box-shadow: 4px 4px 0 #111;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  font-weight: 400;
+}
+.heist-btn-primary:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #111; }
+
+.heist-btn-secondary {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px;
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.heist-btn-secondary:active { background: rgba(255,255,255,0.08); }
+
+/* ── GAME OVER ────────────────────────────────────────────────────────────── */
+.heist-gameover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 30px 20px 24px;
+  height: 100%;
+  justify-content: center;
+}
+.heist-go-icon { font-size: 4rem; animation: heist-float 1.5s ease-in-out infinite; }
+.heist-go-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.6rem;
+  letter-spacing: 4px;
+  color: #ffd700;
+  text-shadow: 0 0 16px rgba(255,215,0,0.5);
+}
+.heist-go-sub {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.55);
+}
+.heist-go-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 4rem;
+  letter-spacing: 4px;
+  color: #fff;
+  line-height: 1;
+}
+.heist-go-pts {
+  font-size: 1.4rem;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 2px;
+}
+.heist-go-stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.heist-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 10px 16px;
+  min-width: 80px;
+}
+.heist-stat span {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.55rem;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.heist-stat b {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+  color: #ffd700;
+}
+
+/* ── PLAY SCREEN ─────────────────────────────────────────────────────────── */
+.heist-play {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0 8px;
+  gap: 0;
+}
+
+/* HUD */
+.heist-hud {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 6px;
+  background: rgba(0,0,0,0.4);
+  border-bottom: 1px solid rgba(255,215,0,0.15);
+}
+.heist-lives { display: flex; gap: 4px; font-size: 1.3rem; }
+.heist-hud-score {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  color: #ffd700;
+}
+.heist-level-badge {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem;
+  background: rgba(255,215,0,0.15);
+  border: 1.5px solid rgba(255,215,0,0.4);
+  border-radius: 8px;
+  padding: 4px 10px;
+  color: #ffd700;
+  font-weight: 400;
+}
+
+/* Combo badge */
+.heist-combo-badge {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  color: #11cc55;
+  text-shadow: 0 0 12px rgba(17,204,85,0.7);
+  padding: 4px 0;
+  animation: heist-combo-pop 0.3s ease;
+}
+@keyframes heist-combo-pop {
+  0%   { transform: scale(0.6); opacity: 0.5; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.heist-combo-x { font-size: 1.4rem; color: #ffd700; }
+
+/* Vault */
+.heist-vault {
+  position: relative;
+  margin: 6px 0 4px;
+}
+.heist-vault-door {
+  width: min(260px, 70vw);
+  height: 96px;
+  background: linear-gradient(135deg, #3a3a5c, #1e1e38);
+  border: 3px solid #ffd700;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px #333, inset 0 0 20px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+.heist-vault.open .heist-vault-door {
+  box-shadow: 0 0 24px rgba(17,204,85,0.7), 0 0 0 1px #333;
+  transform: scale(1.04);
+}
+.heist-vault.alarm .heist-vault-door {
+  box-shadow: 0 0 24px rgba(255,51,51,0.7), 0 0 0 1px #333;
+  animation: heist-alarm-pulse 0.25s ease;
+}
+@keyframes heist-alarm-pulse {
+  0%,100% { background: linear-gradient(135deg, #3a3a5c, #1e1e38); }
+  50%     { background: linear-gradient(135deg, #5c1a1a, #38080a); }
+}
+
+.heist-bolts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.heist-bolts span {
+  position: absolute;
+  width: 10px; height: 10px;
+  background: #ffd700;
+  border-radius: 50%;
+  border: 1.5px solid #333;
+}
+.heist-bolts span:nth-child(1) { top: 8px;  left: 10px; }
+.heist-bolts span:nth-child(2) { top: 8px;  right: 10px; }
+.heist-bolts span:nth-child(3) { bottom: 8px; left: 10px; }
+.heist-bolts span:nth-child(4) { bottom: 8px; right: 10px; }
+
+.heist-vault-face { font-size: 2rem; line-height: 1; }
+.heist-vault-brand {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.5rem;
+  color: rgba(255,215,0,0.45);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+/* Coins burst */
+.heist-coins-burst {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.heist-coin {
+  position: absolute;
+  font-size: 1.4rem;
+  animation: coin-burst 0.85s ease forwards;
+}
+@keyframes coin-burst {
+  from { transform: translate(var(--tx,0px), 0) scale(1); opacity: 1; }
+  to   { transform: translate(var(--tx,0px), var(--ty,-70px)) scale(0.4); opacity: 0; }
+}
+.coin-0 { --tx: -60px; --ty: -55px; animation-delay: 0.00s; }
+.coin-1 { --tx: -30px; --ty: -80px; animation-delay: 0.04s; }
+.coin-2 { --tx:   0px; --ty: -90px; animation-delay: 0.08s; }
+.coin-3 { --tx:  30px; --ty: -80px; animation-delay: 0.04s; }
+.coin-4 { --tx:  60px; --ty: -55px; animation-delay: 0.00s; }
+.coin-5 { --tx: -80px; --ty: -30px; animation-delay: 0.12s; }
+.coin-6 { --tx:  80px; --ty: -30px; animation-delay: 0.12s; }
+
+/* Dial wrapper */
+.heist-dial-wrap {
+  margin: 4px 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* Flash feedback */
+.heist-flash {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 3px;
+  text-align: center;
+  padding: 4px 0;
+  animation: flash-pop 0.3s ease;
+  min-height: 2.2rem;
+}
+@keyframes flash-pop {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.flash-perfect { color: #11cc55; text-shadow: 0 0 16px rgba(17,204,85,0.8); }
+.flash-good    { color: #f5c000; text-shadow: 0 0 12px rgba(245,192,0,0.7); }
+.flash-miss    { color: #ff3333; text-shadow: 0 0 12px rgba(255,51,51,0.8); }
+
+/* Tap cue */
+.heist-tap-cue {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 2px 0;
+}
+.heist-tap-ring {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  animation: tap-ring-pulse 1s ease-in-out infinite;
+}
+@keyframes tap-ring-pulse {
+  0%,100% { transform: scale(1);   opacity: 0.5; }
+  50%     { transform: scale(1.4); opacity: 1; }
+}
+
+/* Guard alert bar */
+.heist-alert-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  margin-top: auto;
+}
+.heist-alert-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.4);
+  white-space: nowrap;
+  font-weight: 400;
+}
+.heist-alert-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.heist-alert-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease, background 0.5s;
+}
+
+/* Screen shake on miss */
+@keyframes heist-shake {
+  0%,100% { transform: translateX(0) rotate(0); }
+  20%     { transform: translateX(-10px) rotate(-1.5deg); }
+  40%     { transform: translateX(10px)  rotate(1.5deg); }
+  60%     { transform: translateX(-7px); }
+  80%     { transform: translateX(7px); }
+}
+.heist-shake { animation: heist-shake 0.45s ease; }

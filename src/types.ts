@@ -1,6 +1,6 @@
 export type VoiceEffect = 'none' | 'm1' | 'm2' | 'm3' | 'f1' | 'f2' | 'f3';
 export type ReactionKey = 'relatable' | 'funny' | 'problem' | 'accurate';
-export type View = 'feed' | 'record' | 'battles' | 'leaderboard' | 'profile' | 'share';
+export type View = 'feed' | 'record' | 'battles' | 'leaderboard' | 'profile' | 'share' | 'heist';
 export type RantCategory = 'all' | 'work' | 'life' | 'tech' | 'politics' | 'sports' | 'relationships';
 
 export interface Rant {

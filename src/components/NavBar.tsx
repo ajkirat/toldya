@@ -6,8 +6,8 @@ const TABS: { view: View; icon: string; label: string; isRecord?: boolean }[] = 
   { view: 'feed',        icon: '🏠', label: 'Feed' },
   { view: 'battles',     icon: '⚔️', label: 'Battles' },
   { view: 'record',      icon: '😤', label: 'Rant', isRecord: true },
+  { view: 'heist',       icon: '💎', label: 'Heist' },
   { view: 'leaderboard', icon: '🏆', label: 'Top' },
-  { view: 'profile',     icon: '👤', label: 'Me' },
 ];
 
 interface Props {
