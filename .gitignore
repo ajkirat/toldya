@@ -1,6 +1,11 @@
 # Dependencies
 node_modules/
 
+# Next.js (matrimony app)
+matrimony/.next/
+matrimony/out/
+matrimony/.env.local
+
 # Build output
 dist/
 
