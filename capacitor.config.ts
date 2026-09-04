@@ -2,8 +2,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   // Unique app ID — reverse domain notation (change 'ajink' to your name)
-  appId: 'com.ajink.toldya',
-  appName: 'ToldYa',
+  appId: 'com.ajink.rantr',
+  appName: 'rantr',
 
   // Vite builds to 'dist/' — Capacitor reads from here
   webDir: 'dist',

@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Rant, Action } from '../types';
 import { formatCount, getReputation, haptic } from '../rantEngine';
-import { sfxPost, sfxNav } from '../sfx';
+import { sfxPost, sfxNav, sfxDismiss } from '../sfx';
 
 interface Props {
   rant: Rant;
@@ -9,6 +9,7 @@ interface Props {
 }
 
 export default function ShareCard({ rant, dispatch }: Props) {
+  const [copied, setCopied] = useState(false);
   const initials = rant.author.slice(0, 2).toUpperCase();
   const rep = getReputation(rant.isBot ? 15 : 1);
 
@@ -17,8 +18,8 @@ export default function ShareCard({ rant, dispatch }: Props) {
     []
   );
 
-  const shareText = `"${rant.title}" — listen & react on rantr.app`;
-  const shareUrl  = 'https://rantr.app';
+  const shareText = `"${rant.title}" — listen & react on rantr`;
+  const shareUrl  = 'https://rantr.vercel.app';
 
   function handleWhatsApp() {
     haptic('light');
@@ -33,30 +34,33 @@ export default function ShareCard({ rant, dispatch }: Props) {
   }
 
   function handleInsta() {
-    haptic('light');
+    haptic('medium');
     sfxNav();
-    // Instagram doesn't support deep link sharing — show a toast workaround
-    dispatch({ type: 'DISMISS_TOAST' });
-    setTimeout(() => {
-      // Navigate to feed with a toast
-      dispatch({ type: 'NAVIGATE', view: 'feed' });
-    }, 50);
-    alert('Screenshot this card and share it to your Instagram story! 📸');
+    // Instagram doesn't support URL-based deep sharing — use native share sheet
+    // which the user can then target at Instagram Stories, or fall back to clipboard.
+    const text = `${shareText} ${shareUrl}`;
+    if (navigator.share) {
+      navigator.share({ title: 'rantr 😤', text, url: shareUrl }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {});
+    }
   }
 
   function handleCopy() {
     haptic('medium');
     sfxPost();
-    navigator.clipboard.writeText(shareText + ' ' + shareUrl).catch(() => {});
-    dispatch({ type: 'DISMISS_TOAST' });
-    // Brief feedback via toast
-    setTimeout(() => {
-      // We can't dispatch a toast from here easily, just navigate
-    }, 0);
+    navigator.clipboard.writeText(`${shareText} ${shareUrl}`).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
   }
 
   function done() {
     haptic('light');
+    sfxDismiss();
     dispatch({ type: 'NAVIGATE', view: 'feed' });
   }
 
@@ -116,9 +120,34 @@ export default function ShareCard({ rant, dispatch }: Props) {
           </div>
 
           <div className="share-card-footer">
-            <span className="share-footer-url">rantr.app</span>
+            <span className="share-footer-url">rantr.vercel.app</span>
             <span className="share-footer-cta">listen & react →</span>
           </div>
+        </div>
+
+        {/* Invite nudge — post-rant viral loop */}
+        <div className="share-invite-nudge">
+          <span className="share-invite-nudge-text">
+            👋 Got friends who rage too?
+          </span>
+          <button
+            className="share-invite-nudge-btn"
+            onClick={() => {
+              haptic('medium');
+              const text = `come rant with me on rantr 😤 — tiny rage. big community.`;
+              const url  = 'https://rantr.vercel.app';
+              if (navigator.share) {
+                navigator.share({ title: 'rantr 😤', text, url }).catch(() => {});
+              } else {
+                navigator.clipboard.writeText(`${text} ${url}`).then(() => {
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }).catch(() => {});
+              }
+            }}
+          >
+            {copied ? '✅ Copied!' : 'Invite them →'}
+          </button>
         </div>
 
         {/* Share buttons */}
@@ -130,7 +159,7 @@ export default function ShareCard({ rant, dispatch }: Props) {
             𝕏 Post
           </button>
           <button className="share-btn copy" onClick={handleCopy}>
-            🔗 Copy link
+            {copied ? '✅ Copied!' : '🔗 Copy link'}
           </button>
           <button className="share-btn insta" onClick={handleInsta}>
             📸 Instagram

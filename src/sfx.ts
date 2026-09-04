@@ -2,15 +2,15 @@
 
 let _ctx: AudioContext | null = null;
 
-function ctx(): AudioContext {
+function getCtx(): AudioContext {
   if (!_ctx) {
     _ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
   }
-  if (_ctx.state === 'suspended') _ctx.resume();
   return _ctx;
 }
 
-function tone(
+// Always await resume before scheduling — Chrome suspends AudioContext until user engagement
+async function tone(
   freq: number, endFreq: number,
   startGain: number, endGain: number,
   duration: number,
@@ -18,7 +18,8 @@ function tone(
   delay = 0,
 ) {
   try {
-    const c = ctx();
+    const c = getCtx();
+    if (c.state !== 'running') await c.resume();
     const t = c.currentTime + delay;
     const osc = c.createOscillator();
     const gain = c.createGain();
@@ -117,4 +118,18 @@ export function sfxRecordStart() {
 export function sfxRecordStop() {
   tone(660, 440, 0.20, 0.001, 0.14, 'triangle');
   tone(440, 330, 0.14, 0.001, 0.12, 'triangle', 0.12);
+}
+
+// Warm 4-note ascending arpeggio — welcome / onboarding confirm
+export function sfxWelcome() {
+  tone(392, 392, 0.18, 0.001, 0.10, 'sine');          // G4
+  tone(494, 494, 0.16, 0.001, 0.10, 'sine', 0.12);    // B4
+  tone(587, 587, 0.16, 0.001, 0.10, 'sine', 0.24);    // D5
+  tone(784, 784, 0.20, 0.001, 0.18, 'sine', 0.36);    // G5
+}
+
+// Soft descending pop — discard / undo
+export function sfxDiscard() {
+  tone(480, 240, 0.16, 0.001, 0.16, 'sine');
+  tone(300, 200, 0.08, 0.001, 0.10, 'triangle', 0.10);
 }

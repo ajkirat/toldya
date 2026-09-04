@@ -62,6 +62,7 @@ export function reducer(state: GameState, action: Action): GameState {
     case 'INIT_USER': {
       const user = {
         username: action.username,
+        avatar: action.avatar ?? '😤',
         rantsPosted: 0,
         reactionsReceived: 0,
         battlesWon: 0,
@@ -128,15 +129,22 @@ export function reducer(state: GameState, action: Action): GameState {
     case 'VOTE_BATTLE': {
       const battles = state.battles.map(b => {
         if (b.id !== action.battleId) return b;
-        if (b.userVote !== null) return b; // already voted
-        const update = action.side === 'a'
-          ? { votesA: b.votesA + 1, userVote: 'a' as const }
-          : { votesB: b.votesB + 1, userVote: 'b' as const };
-        return { ...b, ...update };
+        if (b.userVote === action.side) return b; // same side — no-op
+        // allow switching: undo old vote then add new one
+        return {
+          ...b,
+          votesA: action.side === 'a'
+            ? b.votesA + 1
+            : (b.userVote === 'a' ? Math.max(0, b.votesA - 1) : b.votesA),
+          votesB: action.side === 'b'
+            ? b.votesB + 1
+            : (b.userVote === 'b' ? Math.max(0, b.votesB - 1) : b.votesB),
+          userVote: action.side,
+        };
       });
 
       const battle = battles.find(b => b.id === action.battleId);
-      const user = state.user && battle
+      const user = state.user && battle && battle.userVote === null
         ? { ...state.user, totalVotesReceived: state.user.totalVotesReceived + 1 }
         : state.user;
 
@@ -150,6 +158,9 @@ export function reducer(state: GameState, action: Action): GameState {
 
     case 'NAVIGATE':
       return { ...state, view: action.view };
+
+    case 'NAVIGATE_RECORD':
+      return { ...state, view: 'record', recordPrefill: action.prefill };
 
     case 'SET_FILTER':
       return { ...state, filter: action.filter };

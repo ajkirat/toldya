@@ -3,11 +3,10 @@ import { haptic } from '../rantEngine';
 import { sfxNav, sfxFab } from '../sfx';
 
 const TABS: { view: View; icon: string; label: string; isRecord?: boolean }[] = [
-  { view: 'feed',        icon: '🏠', label: 'Feed' },
-  { view: 'battles',     icon: '⚔️', label: 'Battles' },
-  { view: 'record',      icon: '😤', label: 'Rant', isRecord: true },
-  { view: 'leaderboard', icon: '🏆', label: 'Top' },
-  { view: 'profile',     icon: '👤', label: 'Me' },
+  { view: 'feed',    icon: '🔥', label: 'Feed' },
+  { view: 'record',  icon: '🎙️', label: 'Rant', isRecord: true },
+  { view: 'battles', icon: '⚔️',  label: 'Battles' },
+  { view: 'vibe',    icon: '💢',  label: 'Vibe' },
 ];
 
 interface Props {

@@ -1,15 +1,33 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useMemo } from 'react';
 import type { Rant, ReactionKey, Action } from '../types';
-import { formatCount, getReputation, haptic } from '../rantEngine';
-import { sfxExpand, sfxReaction, sfxPlayPause } from '../sfx';
-import RantRelay from './RantRelay';
+import { formatCount, haptic } from '../rantEngine';
+import { sfxExpand, sfxReaction } from '../sfx';
 
 const REACTIONS: { key: ReactionKey; emoji: string; label: string }[] = [
-  { key: 'relatable', emoji: '🔥', label: 'Relatable' },
-  { key: 'funny',     emoji: '😂', label: 'Funny' },
-  { key: 'problem',   emoji: '🤦', label: 'Problem' },
-  { key: 'accurate',  emoji: '🎯', label: 'Accurate' },
+  { key: 'relatable', emoji: '🔥', label: 'felt' },
+  { key: 'funny',     emoji: '😂', label: 'dead' },
+  { key: 'accurate',  emoji: '🎯', label: 'fact' },
 ];
+
+const CATEGORY_BG: Record<string, string> = {
+  work:          '#FFFEF0',
+  life:          '#F0FFF8',
+  tech:          '#EFF6FF',
+  politics:      '#FAF5FF',
+  sports:        '#FFF7ED',
+  relationships: '#FFF1F2',
+  all:           '#FFFFFF',
+};
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  work:          '💼',
+  life:          '🏠',
+  tech:          '💻',
+  politics:      '🗳️',
+  sports:        '⚽',
+  relationships: '💔',
+  all:           '🔥',
+};
 
 function timeAgo(ts: number): string {
   const diff = Date.now() - ts;
@@ -21,25 +39,17 @@ function timeAgo(ts: number): string {
   return `${Math.floor(h / 24)}d`;
 }
 
-interface WaveformProps { playing: boolean; duration: number; }
-function WaveformBars({ playing, duration }: WaveformProps) {
+function WaveformDeco() {
   const bars = useMemo(
-    () => Array.from({ length: 28 }, () => 8 + Math.random() * 28),
+    () => Array.from({ length: 24 }, () => 4 + Math.random() * 20),
     []
   );
   return (
-    <>
-      <div className="waveform">
-        {bars.map((h, i) => (
-          <div
-            key={i}
-            className={`waveform-bar ${playing ? 'playing' : ''}`}
-            style={{ height: h, '--delay': `${i * 0.022}s` } as React.CSSProperties}
-          />
-        ))}
-      </div>
-      <span className="rant-duration">{duration}s</span>
-    </>
+    <div className="card-waveform-deco">
+      {bars.map((h, i) => (
+        <div key={i} className="card-wave-bar" style={{ height: h }} />
+      ))}
+    </div>
   );
 }
 
@@ -47,48 +57,16 @@ interface Props {
   rant: Rant;
   userReactions: ReactionKey[];
   dispatch: (a: Action) => void;
+  onExpand: () => void;
   compact?: boolean;
 }
 
-export default function RantCard({ rant, userReactions, dispatch, compact }: Props) {
-  const [playing, setPlaying] = useState(false);
-  const [expanded, setExpanded] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  // Clean up audio on unmount
-  useEffect(() => {
-    return () => { audioRef.current?.pause(); };
-  }, []);
-
-  function togglePlay(e: React.MouseEvent) {
-    e.stopPropagation();
-    haptic('light');
-    sfxPlayPause(!playing);
-
-    if (rant.audioBase64) {
-      if (!audioRef.current) {
-        audioRef.current = new Audio(rant.audioBase64);
-        audioRef.current.onended = () => setPlaying(false);
-      }
-      if (playing) {
-        audioRef.current.pause();
-        setPlaying(false);
-      } else {
-        audioRef.current.play().catch(() => {});
-        setPlaying(true);
-      }
-    } else {
-      // Bot rant — animate waveform only
-      setPlaying(p => !p);
-      if (!playing) setTimeout(() => setPlaying(false), rant.duration * 1000);
-    }
-  }
-
+export default function RantCard({ rant, userReactions, dispatch, onExpand, compact }: Props) {
   function handleExpand() {
     if (compact) return;
     haptic('medium');
     sfxExpand();
-    setExpanded(true);
+    onExpand();
   }
 
   function handleReaction(e: React.MouseEvent, key: ReactionKey) {
@@ -98,57 +76,68 @@ export default function RantCard({ rant, userReactions, dispatch, compact }: Pro
     dispatch({ type: 'PLACE_REACTION', rantId: rant.id, reaction: key });
   }
 
+  function handleJoinRant(e: React.MouseEvent) {
+    e.stopPropagation();
+    haptic('medium');
+    dispatch({ type: 'NAVIGATE', view: 'record' });
+  }
+
   const initials = rant.author.slice(0, 2).toUpperCase();
-  const rep = getReputation(rant.isBot ? 15 : 0);
+  const bg = CATEGORY_BG[rant.category] ?? '#FFFFFF';
+  const catEmoji = CATEGORY_EMOJI[rant.category] ?? '🔥';
 
   return (
-    <>
-      <div className="rant-card" onClick={handleExpand}>
-        {/* Header */}
-        <div className="rant-card-header">
-          <div className="rant-avatar">{initials}</div>
-          <div>
-            <div className="rant-author">{rant.author}</div>
-            <div className="rant-rep">{rep}</div>
+    <div className="rant-card" style={{ background: bg }} onClick={handleExpand}>
+      {/* Header */}
+      <div className="rant-card-header">
+        <div className="rant-avatar">{initials}</div>
+        <div className="rant-user-info">
+          <div className="rant-author">{rant.author}</div>
+          <div className="rant-meta">
+            <span className="rant-cat-badge">{catEmoji} {rant.category}</span>
+            <span className="rant-time">{timeAgo(rant.timestamp)}</span>
           </div>
-          <span className="rant-cat-badge">{rant.category}</span>
-          <span className="rant-time">{timeAgo(rant.timestamp)}</span>
         </div>
-
-        {/* Title */}
-        <div className="rant-title">{rant.title}</div>
-
-        {/* Waveform */}
-        <div className="waveform-wrap">
-          <button className={`play-btn ${playing ? 'playing' : ''}`} onClick={togglePlay}>
-            {playing ? '⏸' : '▶'}
-          </button>
-          <WaveformBars playing={playing} duration={rant.duration} />
-        </div>
-
-        {/* Reactions */}
-        <div className="rant-reactions">
-          {REACTIONS.map(r => (
-            <button
-              key={r.key}
-              className={`reaction-btn ${r.key} ${userReactions.includes(r.key) ? 'active' : ''}`}
-              onClick={e => handleReaction(e, r.key)}
-            >
-              <span className="emoji">{r.emoji}</span>
-              {formatCount(rant.reactions[r.key])}
-            </button>
-          ))}
-        </div>
+        <span className="rant-duration-badge">▶ {rant.duration}s</span>
       </div>
 
-      {expanded && (
-        <RantRelay
-          rant={rant}
-          userReactions={userReactions}
-          dispatch={dispatch}
-          onClose={() => setExpanded(false)}
-        />
+      {/* Quoted title */}
+      <div className="rant-title">"{rant.title}"</div>
+
+      {/* Decorative waveform */}
+      <div className="waveform-deco-wrap">
+        <WaveformDeco />
+      </div>
+
+      {/* Reactions */}
+      <div className="rant-reactions">
+        {REACTIONS.map(r => {
+          const isActive = userReactions.includes(r.key);
+          return (
+            <div key={r.key} className="rxn-wrap">
+              <span
+                className={`rxn-launch-ghost${isActive ? ' rxn-launch-ghost--fly' : ''}`}
+                aria-hidden="true"
+              >{r.emoji}</span>
+              <button
+                className={`reaction-btn ${r.key} ${isActive ? 'active' : ''}`}
+                onClick={e => handleReaction(e, r.key)}
+              >
+                <span className="emoji">{r.emoji}</span>
+                <span className="rxn-label">{r.label}</span>
+                <span>{formatCount(rant.reactions[r.key])}</span>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Join CTA */}
+      {!compact && (
+        <button className="join-rant-btn" onClick={handleJoinRant}>
+          🎤 Join this rant
+        </button>
       )}
-    </>
+    </div>
   );
 }

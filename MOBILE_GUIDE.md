@@ -1,18 +1,21 @@
-# ToldYa — Mobile Deployment Guide
+# rantr — Mobile Deployment Guide
 
-## Overview of the Two-Stage Approach
+## Overview
 
 ```
 Stage 1 (Done): PWA  → Share a URL → anyone installs from browser  ✓
 Stage 2 (Next):  Capacitor → Google Play Store + Apple App Store
 ```
 
+App ID (Play Store): `com.ajink.rantr`
+Web URL: `https://rantr.vercel.app`
+
 ---
 
 ## STAGE 1 — PWA (Progressive Web App)
 
 ### What this gives you
-- A shareable URL (e.g. `toldya.vercel.app`)
+- A shareable URL at `rantr.vercel.app`
 - Users open the URL on their phone and tap "Add to Home Screen"
 - Looks and feels exactly like a native app (full screen, no browser bar)
 - Works offline (service worker caches everything)
@@ -22,32 +25,29 @@ Stage 2 (Next):  Capacitor → Google Play Store + Apple App Store
 
 1. **Push code to GitHub**
    ```
-   git init
    git add .
-   git commit -m "ToldYa initial commit"
-   git remote add origin https://github.com/YOUR_USERNAME/toldya.git
-   git push -u origin main
+   git commit -m "rantr update"
+   git push
    ```
 
-2. **Connect to Vercel**
+2. **Connect to Vercel** (first time only)
    - Go to https://vercel.com → Sign up with GitHub (free)
-   - Click "New Project" → Import your `toldya` GitHub repo
+   - Click "New Project" → Import your rantr GitHub repo
    - Build command: `npm run build`
    - Output directory: `dist`
    - Click Deploy → Done!
 
-3. **Share the URL** — e.g. `https://toldya.vercel.app`
+3. **Share the URL** — `https://rantr.vercel.app`
 
 4. **On Android phone**: Open the URL in Chrome → tap ⋮ menu → "Add to Home Screen"
 5. **On iPhone**: Open the URL in Safari → tap Share button → "Add to Home Screen"
 
 ### Every time you make code changes
 ```
-# Edit code with Claude Code, then:
 git add .
 git commit -m "your change description"
 git push
-# Vercel auto-deploys in ~30 seconds
+# Vercel auto-deploys in ~30 seconds → rantr.vercel.app updated
 ```
 
 ---
@@ -65,12 +65,7 @@ git push
    - Add: `ANDROID_HOME = C:\Users\ajink\AppData\Local\Android\Sdk`
    - Add to PATH: `%ANDROID_HOME%\tools;%ANDROID_HOME%\platform-tools`
 
-3. **Open the Android project** (already created by Capacitor)
-   ```powershell
-   # Run this script from the heist folder:
-   .\run-dev.ps1  # (or use the npm script)
-   ```
-   Or manually:
+3. **Open the Android project**
    ```
    npx cap open android
    ```
@@ -78,8 +73,7 @@ git push
 
 ### Building & testing
 ```powershell
-# Edit code → build → sync to Android → open Android Studio
-.\build-and-sync.ps1
+npm run mobile:android
 # Then in Android Studio: Run ▶ (or Shift+F10)
 ```
 
@@ -88,8 +82,19 @@ git push
 2. Create a keystore (keep it safe — you'll need it forever)
 3. Build a signed `.aab` file
 4. Go to https://play.google.com/console → Create app → Upload AAB
-5. Fill in store listing → Release to production
+5. App ID to use: `com.ajink.rantr`
+6. Privacy Policy URL: `https://rantr.vercel.app/privacy.html`
+7. Fill in store listing → Release to production
 - **Cost**: $25 one-time developer fee
+
+### Play Console checklist before submitting
+- [ ] Upload signed AAB
+- [ ] Store listing: icon, feature graphic, 2+ screenshots, description
+- [ ] Content rating: complete IARC questionnaire
+- [ ] Data safety: microphone (local only), username (local only), no data shared
+- [ ] Privacy Policy URL: `https://rantr.vercel.app/privacy.html`
+- [ ] Target audience: 18+
+- [ ] App category: Entertainment
 
 ---
 
@@ -107,53 +112,48 @@ npx cap open ios  # Opens Xcode
 ### Publishing
 1. In Xcode: Product → Archive
 2. Upload to App Store Connect (https://appstoreconnect.apple.com)
-3. Submit for review (takes 1-3 days)
+3. Submit for review (takes 1–3 days)
 - **Cost**: $99/year Apple Developer Program
 
 ---
 
-## Your everyday dev workflow (after Vercel is set up)
+## Everyday dev workflow
 
 ```
 1. Open Claude Code in the heist folder
-2. Make your changes (Claude edits the files)
-3. Test locally:  .\run-dev.ps1  → http://localhost:5173
+2. Make your changes
+3. Test locally: npm run dev → http://localhost:5173
 4. Deploy:
    git add .
    git commit -m "description"
    git push
-   → Vercel auto-deploys in ~30s → toldya.vercel.app updated
+   → Vercel auto-deploys in ~30s → rantr.vercel.app updated
 5. For Android native build:
-   .\build-and-sync.ps1  → open in Android Studio → test on device
+   npm run mobile:android → open in Android Studio → test on device
 ```
 
 ---
 
-## Files created by mobile setup
+## Key files
 
 | File | Purpose |
 |------|---------|
+| `capacitor.config.ts` | Capacitor settings (app ID: com.ajink.rantr, name: rantr) |
 | `vite.config.ts` | PWA plugin — generates service worker + manifest |
-| `index.html` | Mobile meta tags, Apple touch icon, PWA manifest link |
-| `capacitor.config.ts` | Capacitor settings (app ID, name, webDir) |
-| `public/icons/icon.svg` | App icon (SVG, scalable) |
+| `public/privacy.html` | Privacy Policy (required for Play Store) |
 | `public/icons/icon-192.png` | App icon for PWA home screen (Android) |
 | `public/icons/icon-512.png` | App icon for PWA splash screen |
 | `android/` | Native Android project (Capacitor generated) |
-| `generate-icons-simple.mjs` | Regenerate PNG icons: `node generate-icons-simple.mjs` |
-| `build-and-sync.ps1` | Build + sync to Capacitor: `.\build-and-sync.ps1` |
 
 ---
 
 ## Replacing the app icon
 
-The current icon is a simple bar chart generated by code.
-To use a custom icon:
 1. Create a 512×512 PNG with your design
 2. Save as `public/icons/icon-512.png`
 3. Save a 192×192 version as `public/icons/icon-192.png`
 4. Run `npm run build` to rebuild
 
-For proper Android adaptive icons and iOS icons, use:
+Useful tools:
 - https://maskable.app (test if icon works as "maskable")
 - https://realfavicongenerator.net (generate all icon sizes at once)

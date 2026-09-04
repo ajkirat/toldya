@@ -1,35 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Dark background -->
-  <rect width="512" height="512" rx="100" fill="#0d1117"/>
+  <!-- Black background -->
+  <rect width="512" height="512" rx="96" fill="#111111"/>
 
-  <!-- Subtle gold glow behind checkmark -->
-  <ellipse cx="256" cy="300" rx="190" ry="155" fill="#f59e0b" opacity="0.06"/>
+  <!-- Face in app orange -->
+  <circle cx="256" cy="272" r="168" fill="#FF4D1C"/>
 
-  <!-- Crown — 3 points, king energy -->
-  <polygon points="256,52 296,108 346,70 322,148 190,148 166,70 216,108" fill="#f59e0b"/>
-  <!-- Crown base bar -->
-  <rect x="182" y="134" width="148" height="28" rx="7" fill="#f59e0b"/>
+  <!-- Angry furrowed brows (cream) -->
+  <path d="M148,192 L208,218" stroke="#FFFBF5" stroke-width="22" stroke-linecap="round"/>
+  <path d="M304,218 L364,192" stroke="#FFFBF5" stroke-width="22" stroke-linecap="round"/>
 
-  <!-- Bold checkmark — hero element "I WAS RIGHT" -->
-  <polyline
-    points="80,290 205,415 432,155"
-    fill="none"
-    stroke="#f59e0b"
-    stroke-width="72"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  />
-  <!-- Inner highlight on checkmark for depth -->
-  <polyline
-    points="80,290 205,415 432,155"
-    fill="none"
-    stroke="#ffffff"
-    stroke-width="20"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    opacity="0.18"
-  />
+  <!-- Eyes — tight angry squint (cream) -->
+  <ellipse cx="196" cy="258" rx="24" ry="16" fill="#FFFBF5"/>
+  <ellipse cx="316" cy="258" rx="24" ry="16" fill="#FFFBF5"/>
 
-  <!-- Exclamation dot — bottom right "!" energy -->
-  <circle cx="434" cy="445" r="20" fill="#f59e0b"/>
+  <!-- Gritted teeth mouth -->
+  <rect x="178" y="310" width="156" height="42" rx="14" fill="#FFFBF5"/>
+  <line x1="218" y1="310" x2="218" y2="352" stroke="#FF4D1C" stroke-width="5"/>
+  <line x1="256" y1="310" x2="256" y2="352" stroke="#FF4D1C" stroke-width="5"/>
+  <line x1="294" y1="310" x2="294" y2="352" stroke="#FF4D1C" stroke-width="5"/>
+
+  <!-- Steam puffs (cream) -->
+  <path d="M142,148 Q118,122 142,96 Q166,70 142,44" fill="none" stroke="#FFFBF5" stroke-width="16" stroke-linecap="round"/>
+  <path d="M192,120 Q168,94 192,68 Q216,42 192,16" fill="none" stroke="#FFFBF5" stroke-width="12" stroke-linecap="round" opacity="0.7"/>
+  <path d="M320,148 Q344,122 320,96 Q296,70 320,44" fill="none" stroke="#FFFBF5" stroke-width="16" stroke-linecap="round"/>
+  <path d="M370,120 Q394,94 370,68 Q346,42 370,16" fill="none" stroke="#FFFBF5" stroke-width="12" stroke-linecap="round" opacity="0.7"/>
 </svg>

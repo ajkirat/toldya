@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rantr Privacy Policy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Tokens ─────────────────────────────────────────── */
+    :root {
+      --bg:        #faf7f5;
+      --bg-card:   #f2ece8;
+      --border:    #e0d4cc;
+      --text:      #1a0e09;
+      --text-sub:  #6b4e3d;
+      --accent:    #f97316;
+      --accent-lo: rgba(249,115,22,.12);
+      --brand-bg:  #0e0a0a;
+      --brand-txt: #fdf8f6;
+      --rule:      rgba(249,115,22,.55);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg:        #0e0a0a;
+        --bg-card:   #1a1210;
+        --border:    #2e1e18;
+        --text:      #f5e8e0;
+        --text-sub:  #9a7060;
+        --accent:    #f97316;
+        --accent-lo: rgba(249,115,22,.14);
+        --brand-bg:  #0e0a0a;
+        --brand-txt: #fdf8f6;
+        --rule:      rgba(249,115,22,.6);
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg:        #0e0a0a;
+      --bg-card:   #1a1210;
+      --border:    #2e1e18;
+      --text:      #f5e8e0;
+      --text-sub:  #9a7060;
+      --accent:    #f97316;
+      --accent-lo: rgba(249,115,22,.14);
+      --brand-bg:  #0e0a0a;
+      --brand-txt: #fdf8f6;
+      --rule:      rgba(249,115,22,.6);
+    }
+
+    /* ── Reset ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Brand header ───────────────────────────────────── */
+    .site-header {
+      background: var(--brand-bg);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-mark {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #fdf8f6;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+    }
+    .brand-mark span { color: var(--accent); }
+    .header-sep {
+      color: #4a3028;
+      font-size: 18px;
+      user-select: none;
+    }
+    .header-page-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #7a5040;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Page container ─────────────────────────────────── */
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    /* ── Page title block ───────────────────────────────── */
+    .page-eyebrow {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .page-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+      text-wrap: balance;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+    .page-meta {
+      font-size: 13.5px;
+      color: var(--text-sub);
+      margin-bottom: 36px;
+    }
+
+    /* ── Summary card ───────────────────────────────────── */
+    .summary-card {
+      background: var(--accent-lo);
+      border: 1px solid var(--rule);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      padding: 20px 22px;
+      margin-bottom: 52px;
+    }
+    .summary-card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .summary-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .summary-list li {
+      font-size: 15px;
+      color: var(--text);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .summary-list li::before {
+      content: '✓';
+      color: var(--accent);
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ── Sections ───────────────────────────────────────── */
+    .policy-section {
+      margin-bottom: 44px;
+      padding-left: 18px;
+      border-left: 2px solid var(--rule);
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 650;
+      color: var(--text);
+      margin-bottom: 12px;
+      letter-spacing: -0.2px;
+    }
+    .section-body {
+      font-size: 15.5px;
+      color: var(--text);
+      line-height: 1.75;
+      max-width: 62ch;
+    }
+    .section-body p + p { margin-top: 12px; }
+    .section-body ul {
+      margin: 10px 0 10px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .section-body ul li { font-size: 15.5px; }
+    .section-body strong { font-weight: 600; color: var(--text); }
+    .section-body a {
+      color: var(--accent);
+      text-underline-offset: 3px;
+    }
+    .section-body a:hover { opacity: 0.8; }
+
+    /* ── Divider ────────────────────────────────────────── */
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 0 44px;
+    }
+
+    /* ── Footer ─────────────────────────────────────────── */
+    .page-footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-brand {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-sub);
+      letter-spacing: -0.3px;
+    }
+    .footer-brand span { color: var(--accent); }
+    .footer-note {
+      font-size: 13px;
+      color: var(--text-sub);
+    }
+
+    /* ── Responsive ─────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .page { padding: 36px 18px 60px; }
+      .policy-section { padding-left: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Brand header -->
+  <header class="site-header">
+    <a href="/" class="brand-mark">😤 ran<span>tr</span></a>
+    <span class="header-sep">/</span>
+    <span class="header-page-label">Privacy Policy</span>
+  </header>
+
+  <main class="page">
+
+    <p class="page-eyebrow">Legal</p>
+    <h1 class="page-title">Privacy Policy</h1>
+    <p class="page-meta">Effective date: September 5, 2026 &nbsp;·&nbsp; App version: 1.1.0</p>
+
+    <!-- TL;DR summary -->
+    <div class="summary-card">
+      <div class="summary-card-title">The short version</div>
+      <ul class="summary-list">
+        <li>Your rants and username live only on your device — we never see them.</li>
+        <li>We do not collect, transmit, or sell any personal data.</li>
+        <li>Microphone access is only active while you are recording.</li>
+        <li>No accounts, no passwords, no login required.</li>
+        <li>No advertising or analytics SDKs are embedded in the app.</li>
+      </ul>
+    </div>
+
+    <!-- 1 -->
+    <section class="policy-section">
+      <h2 class="section-title">1. Who we are</h2>
+      <div class="section-body">
+        <p>rantr is an independent voice-rant application developed by Ajink Ratnaparkhi. You can reach us at <a href="mailto:aratnaparkhi69@gmail.com">aratnaparkhi69@gmail.com</a>.</p>
+        <p>This policy applies to the rantr Android application and the web app at <a href="https://rantr.vercel.app">rantr.vercel.app</a>.</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="policy-section">
+      <h2 class="section-title">2. What data we collect — and what we don't</h2>
+      <div class="section-body">
+        <p>rantr is a <strong>local-first app</strong>. All data you create stays on your device.</p>
+        <p>The following is stored locally using your browser's <code>localStorage</code> API:</p>
+        <ul>
+          <li>The username you choose when you first open the app.</li>
+          <li>Voice recordings you make, stored as audio data on your device only.</li>
+          <li>Your reactions, battle votes, and in-app activity.</li>
+        </ul>
+        <p>We do <strong>not</strong> collect, receive, or have access to any of this data. It never leaves your device. Uninstalling the app or clearing your browser data removes it permanently.</p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="policy-section">
+      <h2 class="section-title">3. Microphone access</h2>
+      <div class="section-body">
+        <p>rantr requests access to your device's microphone solely to let you record voice rants. Microphone access is only activated when you tap the record button and is released when you stop recording.</p>
+        <p>Audio is processed entirely on your device. We do not stream, upload, or transmit your recordings anywhere.</p>
+        <p>You can revoke microphone access at any time in your device settings. Without it, recording features will not work, but the rest of the app remains fully functional.</p>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="policy-section">
+      <h2 class="section-title">4. Sharing features</h2>
+      <div class="section-body">
+        <p>rantr includes optional sharing features (the Share Card, Rant Vibe Check) that let you share links or text to other apps on your device.</p>
+        <p>When you use these features, you are sharing content using your device's native sharing system (the Web Share API or your clipboard). rantr does not transmit any data to our servers as part of this — you are sharing directly with the app you choose (WhatsApp, Instagram, etc.), and their privacy policies govern what happens next.</p>
+        <p>Vibe Check links are self-contained URLs. Your answers are encoded directly in the link and are not sent to any rantr server.</p>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="policy-section">
+      <h2 class="section-title">5. Third-party services</h2>
+      <div class="section-body">
+        <p>The rantr web app is hosted on <strong>Vercel</strong>. Vercel may collect standard server access logs (IP address, browser type, pages visited) as part of normal hosting operations. See <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener">Vercel's Privacy Policy</a>.</p>
+        <p>rantr does not embed any advertising networks, analytics SDKs (such as Google Analytics or Firebase), crash reporting tools, or social login providers. We do not use cookies.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="policy-section">
+      <h2 class="section-title">6. Children</h2>
+      <div class="section-body">
+        <p>rantr is intended for users aged 13 and older. We do not knowingly collect any information from children under 13. Because all data stays on-device and we collect nothing server-side, there is no personal data for us to delete — but if you have concerns, contact us at the address below.</p>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="policy-section">
+      <h2 class="section-title">7. Your rights</h2>
+      <div class="section-body">
+        <p>Because we store nothing on our servers, most data-subject rights (access, correction, deletion) are fulfilled entirely within the app itself:</p>
+        <ul>
+          <li><strong>Delete your data</strong> — clear the app's storage in your device settings, or uninstall the app.</li>
+          <li><strong>Revoke microphone access</strong> — in your device's app permissions settings.</li>
+        </ul>
+        <p>If you have any additional questions or requests, contact us at <a href="mailto:aratnaparkhi69@gmail.com">aratnaparkhi69@gmail.com</a>.</p>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="policy-section">
+      <h2 class="section-title">8. Changes to this policy</h2>
+      <div class="section-body">
+        <p>If we make material changes to this policy — for example, if we add a backend or analytics — we will update the effective date at the top of this page and, where appropriate, notify users within the app. Continued use of rantr after changes are posted constitutes acceptance of the updated policy.</p>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="policy-section">
+      <h2 class="section-title">9. Contact</h2>
+      <div class="section-body">
+        <p>Questions about this policy or rantr's data practices:</p>
+        <p><a href="mailto:aratnaparkhi69@gmail.com">aratnaparkhi69@gmail.com</a></p>
+      </div>
+    </section>
+
+    <footer class="page-footer">
+      <div class="footer-brand">😤 ran<span>tr</span></div>
+      <p class="footer-note">© 2026 Ajink Ratnaparkhi. All rights reserved.</p>
+    </footer>
+
+  </main>
+
+</body>
+</html>

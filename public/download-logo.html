@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Download rantr Logo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@1,900&display=swap" rel="stylesheet">
+  <style>
+    body { background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; font-family: sans-serif; color: #fff; gap: 20px; }
+    canvas { border-radius: 22px; }
+    button { padding: 12px 28px; background: #f97316; color: #fff; border: none; border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    button:hover { background: #ea6c0a; }
+  </style>
+</head>
+<body>
+  <canvas id="c" width="512" height="512"></canvas>
+  <button onclick="download()">Download PNG</button>
+
+  <script>
+    function draw() {
+      const canvas = document.getElementById('c');
+      const ctx = canvas.getContext('2d');
+      const W = 512, H = 512;
+
+      // Background
+      const bg = ctx.createLinearGradient(0, 0, W, H);
+      bg.addColorStop(0, '#1a0f0f');
+      bg.addColorStop(1, '#0e0808');
+      const r = 110;
+      ctx.beginPath();
+      ctx.moveTo(r, 0);
+      ctx.lineTo(W - r, 0);
+      ctx.quadraticCurveTo(W, 0, W, r);
+      ctx.lineTo(W, H - r);
+      ctx.quadraticCurveTo(W, H, W - r, H);
+      ctx.lineTo(r, H);
+      ctx.quadraticCurveTo(0, H, 0, H - r);
+      ctx.lineTo(0, r);
+      ctx.quadraticCurveTo(0, 0, r, 0);
+      ctx.closePath();
+      ctx.fillStyle = bg;
+      ctx.fill();
+
+      // Text gradient
+      const grad = ctx.createLinearGradient(0, 160, 0, 360);
+      grad.addColorStop(0, '#ff5a1f');
+      grad.addColorStop(1, '#e53e0a');
+
+      ctx.font = 'italic 900 152px "Nunito", sans-serif';
+      ctx.fillStyle = grad;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('rantr', W / 2, H / 2 + 10);
+    }
+
+    function download() {
+      const canvas = document.getElementById('c');
+      const a = document.createElement('a');
+      a.download = 'rantr-logo.png';
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+    }
+
+    // Explicitly load Nunito before drawing so canvas picks it up
+    document.fonts.load('italic 900 152px "Nunito"').then(() => {
+      draw();
+      // Draw twice — canvas sometimes misses the first render with web fonts
+      requestAnimationFrame(() => draw());
+    });
+  </script>
+</body>
+</html>

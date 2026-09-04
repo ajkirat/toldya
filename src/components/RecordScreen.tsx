@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { GameState, Action, VoiceEffect, RantCategory } from '../types';
 import { generateAITitle, haptic } from '../rantEngine';
-import { sfxRecordStart, sfxRecordStop, sfxPost } from '../sfx';
+import { sfxRecordStart, sfxRecordStop, sfxPost, sfxNav, sfxDiscard } from '../sfx';
 
 const AI_VOICES: { key: VoiceEffect; label: string; icon: string; desc: string }[] = [
   { key: 'none', label: 'My Voice', icon: '🎤', desc: 'Raw' },
@@ -12,6 +12,16 @@ const AI_VOICES: { key: VoiceEffect; label: string; icon: string; desc: string }
   { key: 'f2',   label: 'Voice E',  icon: '🎭', desc: 'Bright' },
   { key: 'f3',   label: 'Voice F',  icon: '🎭', desc: 'Clear' },
 ];
+
+// ElevenLabs voice IDs mapped to each effect key
+const ELEVEN_VOICE_IDS: Record<string, string> = {
+  m1: 'pNInz6obpgDQGcFmaJgB', // Adam    – deep American male
+  m2: 'TxGEqnHWrfWFTfGW9XjX', // Josh    – conversational male
+  m3: 'VR6AewLTigWG4xSOukaG', // Arnold  – confident male
+  f1: '21m00Tcm4TlvDq8ikWAM', // Rachel  – calm American female
+  f2: 'AZnzlk1XvdvUeBnXmlld', // Domi    – strong female
+  f3: 'EXAVITQu4vr4xnSDxMaL', // Bella   – soft female
+};
 
 const DEMO_SETTINGS: Record<string, { pitch: number; rate: number }> = {
   m1: { pitch: 0.75, rate: 0.90 },
@@ -57,51 +67,84 @@ async function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-async function applyVoiceEffect(base64: string, effect: VoiceEffect): Promise<string> {
-  if (effect === 'none') return base64;
+// ── ElevenLabs Speech-to-Speech ──────────────────────────────────────────────
+async function applyElevenLabsVoice(base64: string, effect: VoiceEffect): Promise<string> {
+  const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY as string | undefined;
+  const voiceId = ELEVEN_VOICE_IDS[effect];
+  if (!apiKey || !voiceId) throw new Error('No ElevenLabs API key or voice ID');
 
+  // base64 data URL → Blob
+  const fetchRes = await fetch(base64);
+  const blob = await fetchRes.blob();
+
+  const form = new FormData();
+  form.append('audio', blob, 'rant.webm');
+  form.append('model_id', 'eleven_multilingual_sts_v2');
+  form.append('voice_settings', JSON.stringify({ stability: 0.45, similarity_boost: 0.80 }));
+
+  const resp = await fetch(
+    `https://api.elevenlabs.io/v1/speech-to-speech/${voiceId}/stream`,
+    { method: 'POST', headers: { 'xi-api-key': apiKey }, body: form }
+  );
+
+  if (!resp.ok) {
+    const msg = await resp.text().catch(() => resp.statusText);
+    throw new Error(`ElevenLabs ${resp.status}: ${msg}`);
+  }
+
+  const audioBlob = await resp.blob();
+  return blobToBase64(audioBlob);
+}
+
+// ── Web Audio pitch-shift fallback ───────────────────────────────────────────
+async function applyPitchShift(base64: string, effect: VoiceEffect): Promise<string> {
   const SEMITONES: Record<string, number> = {
     m1: -2, m2: -1.5, m3: -1,
     f1: 1.5, f2: 2,   f3: 1,
   };
-  const st = SEMITONES[effect] ?? 0;
-  const rate = Math.pow(2, st / 12);
+  const rate = Math.pow(2, (SEMITONES[effect] ?? 0) / 12);
 
+  const res = await fetch(base64);
+  const arrayBuffer = await res.arrayBuffer();
+
+  const decodeCtx = new AudioContext();
+  const decoded = await decodeCtx.decodeAudioData(arrayBuffer.slice(0));
+  await decodeCtx.close();
+
+  const offlineCtx = new OfflineAudioContext(
+    decoded.numberOfChannels,
+    Math.ceil(decoded.length / rate),
+    decoded.sampleRate,
+  );
+  const src = offlineCtx.createBufferSource();
+  src.buffer = decoded;
+  src.playbackRate.value = rate;
+
+  const filter = offlineCtx.createBiquadFilter();
+  filter.type = 'peaking';
+  filter.frequency.value = effect.startsWith('m') ? 200 : 3000;
+  filter.gain.value = effect.startsWith('m') ? 4 : 3;
+  filter.Q.value = 1;
+  src.connect(filter);
+  filter.connect(offlineCtx.destination);
+  src.start(0);
+
+  const rendered = await offlineCtx.startRendering();
+  const wav = audioBufferToWav(rendered);
+  return blobToBase64(new Blob([wav], { type: 'audio/wav' }));
+}
+
+async function applyVoiceEffect(base64: string, effect: VoiceEffect): Promise<string> {
+  if (effect === 'none') return base64;
   try {
-    // Decode base64 → ArrayBuffer
-    const dataUrl = base64;
-    const res = await fetch(dataUrl);
-    const arrayBuffer = await res.arrayBuffer();
-
-    const decodeCtx = new AudioContext();
-    const decoded = await decodeCtx.decodeAudioData(arrayBuffer.slice(0));
-    await decodeCtx.close();
-
-    const offlineCtx = new OfflineAudioContext(
-      decoded.numberOfChannels,
-      Math.ceil(decoded.length / rate),
-      decoded.sampleRate,
-    );
-    const src = offlineCtx.createBufferSource();
-    src.buffer = decoded;
-    src.playbackRate.value = rate;
-
-    // Light EQ per voice
-    const filter = offlineCtx.createBiquadFilter();
-    filter.type = 'peaking';
-    filter.frequency.value = effect.startsWith('m') ? 200 : 3000;
-    filter.gain.value = effect.startsWith('m') ? 4 : 3;
-    filter.Q.value = 1;
-    src.connect(filter);
-    filter.connect(offlineCtx.destination);
-    src.start(0);
-
-    const rendered = await offlineCtx.startRendering();
-    const wav = audioBufferToWav(rendered);
-    const wavBlob = new Blob([wav], { type: 'audio/wav' });
-    return await blobToBase64(wavBlob);
-  } catch {
-    return base64; // fallback to unprocessed
+    return await applyElevenLabsVoice(base64, effect);
+  } catch (err) {
+    console.warn('[rantr] ElevenLabs voice failed, using pitch-shift fallback:', err);
+    try {
+      return await applyPitchShift(base64, effect);
+    } catch {
+      return base64;
+    }
   }
 }
 
@@ -209,6 +252,8 @@ export default function RecordScreen({ state, dispatch }: Props) {
   }
 
   function discard() {
+    haptic('light');
+    sfxDiscard();
     setAudioBase64(null);
     setElapsed(0);
     setVoiceEffect('none');
@@ -317,6 +362,7 @@ export default function RecordScreen({ state, dispatch }: Props) {
                   className={`voice-btn ${v.key === 'none' ? 'voice-btn-none' : ''} ${voiceEffect === v.key ? 'selected' : ''}`}
                   onClick={() => {
                     haptic('light');
+                    sfxNav();
                     setVoiceEffect(v.key);
                     playDemo(v.key);
                   }}

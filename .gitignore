@@ -30,3 +30,5 @@ install-pwa.ps1
 cap-init.ps1
 generate-icons.ps1
 generate-icons.mjs
+
+.vercel

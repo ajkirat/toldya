@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "rantr",
+      "runtimeExecutable": "C:\\Users\\ajink\\AppData\\Local\\nodejs\\node-v20.18.0-win-x64\\node.exe",
+      "runtimeArgs": ["run-rantr.mjs"],
+      "port": 5174
+    },
+    {
       "name": "dev",
       "runtimeExecutable": "C:\\Users\\ajink\\AppData\\Local\\nodejs\\node-v20.18.0-win-x64\\node.exe",
       "runtimeArgs": ["node_modules\\vite\\bin\\vite.js"],
@@ -12,6 +18,12 @@
       "runtimeExecutable": "C:\\Users\\ajink\\AppData\\Local\\nodejs\\node-v20.18.0-win-x64\\node.exe",
       "runtimeArgs": ["node_modules\\vite\\bin\\vite.js", "preview"],
       "port": 4173
+    },
+    {
+      "name": "rantr-dev",
+      "runtimeExecutable": "C:\\Users\\ajink\\AppData\\Local\\nodejs\\node-v20.18.0-win-x64\\node.exe",
+      "runtimeArgs": ["C:\\Users\\ajink\\OneDrive\\Documents\\rantr\\run-vite-dev.js", "--port", "5175"],
+      "port": 5175
     }
   ]
 }

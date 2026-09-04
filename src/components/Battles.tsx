@@ -1,6 +1,42 @@
-import type { GameState, Action } from '../types';
+import { useState, useEffect, useRef } from 'react';
+import type { GameState, Action, Rant } from '../types';
 import { haptic } from '../rantEngine';
-import { sfxVote } from '../sfx';
+
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  work: '💼', life: '🏠', tech: '💻',
+  politics: '🗳️', sports: '⚽', relationships: '💔', all: '🔥',
+};
+
+const CATEGORY_BG: Record<string, string> = {
+  work: '#FFFEF0', life: '#F0FFF4', tech: '#EFF6FF',
+  politics: '#FAF5FF', sports: '#FFF7ED', relationships: '#FFF1F2', all: '#FFFBF5',
+};
+
+const WIN_MSGS = [
+  'you\'re riding with the majority 🔥',
+  'crowd agrees with you on this one',
+  'rant radar is locked in',
+  'you and the masses are aligned',
+  'popular opinion — and you nailed it',
+];
+
+const UNDERDOG_MSGS = [
+  'bold pick — you\'re in the minority ✊',
+  'contrarian mode activated',
+  'rare take. respect.',
+  'going against the grain — classic you',
+  'few feel this way. you do. own it.',
+];
+
+function randBetween(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pickChallenger(rants: Rant[], excludeId: string): Rant {
+  const pool = rants.filter(r => r.id !== excludeId);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
 interface Props {
   state: GameState;
@@ -8,83 +44,123 @@ interface Props {
 }
 
 export default function Battles({ state, dispatch }: Props) {
-  const { battles, rants } = state;
+  const { rants } = state;
 
-  function vote(battleId: string, side: 'a' | 'b') {
+  const [rantA, setRantA]   = useState<Rant>(() => rants[0]);
+  const [rantB, setRantB]   = useState<Rant>(() => pickChallenger(rants, rants[0].id));
+  const [votesA, setVotesA] = useState(() => randBetween(120, 500));
+  const [votesB, setVotesB] = useState(() => randBetween(120, 500));
+  const [voted, setVoted]   = useState<'a' | 'b' | null>(null);
+  const [newSide, setNewSide] = useState<'a' | 'b' | null>(null);
+  const [round, setRound]   = useState(1);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
+  function vote(side: 'a' | 'b') {
+    if (voted !== null) return;
     haptic('heavy');
-    sfxVote();
-    dispatch({ type: 'VOTE_BATTLE', battleId, side });
+    if (side === 'a') setVotesA(v => v + 1);
+    else setVotesB(v => v + 1);
+    setVoted(side);
+
+    timerRef.current = setTimeout(() => {
+      if (side === 'a') {
+        const next = pickChallenger(rants, rantA.id);
+        setRantB(next);
+        setVotesB(randBetween(80, 400));
+        setNewSide('b');
+      } else {
+        const next = pickChallenger(rants, rantB.id);
+        setRantA(next);
+        setVotesA(randBetween(80, 400));
+        setNewSide('a');
+      }
+      setVoted(null);
+      setRound(r => r + 1);
+      setTimeout(() => setNewSide(null), 400);
+    }, 1900);
+  }
+
+  const total = votesA + votesB;
+  const pctA  = total > 0 ? Math.round((votesA / total) * 100) : 50;
+  const pctB  = 100 - pctA;
+
+  function affirmMsg(): string {
+    if (!voted) return '';
+    const userPct = voted === 'a' ? pctA : pctB;
+    const pool = userPct >= 50 ? WIN_MSGS : UNDERDOG_MSGS;
+    return pool[round % pool.length];
   }
 
   return (
-    <div className="screen">
-      <div className="battles-screen">
-        <div className="battles-header">Rant Battles ⚔️</div>
-        <div className="battles-sub">Tap the rant you think hits harder</div>
+    <div className="screen btl-screen">
 
-        {battles.map(battle => {
-          const rantA = rants.find(r => r.id === battle.rantAId);
-          const rantB = rants.find(r => r.id === battle.rantBId);
-          if (!rantA || !rantB) return null;
-
-          const total = battle.votesA + battle.votesB;
-          const pctA = total > 0 ? Math.round((battle.votesA / total) * 100) : 50;
-          const pctB = 100 - pctA;
-          const voted = battle.userVote !== null;
-
-          return (
-            <div key={battle.id} className="battle-card">
-              <div className="battle-versus-wrap">
-                {/* Side A */}
-                <button
-                  className={`battle-side ${
-                    voted
-                      ? battle.userVote === 'a' ? 'voted-win' : 'voted-lose'
-                      : ''
-                  }`}
-                  onClick={() => !voted && vote(battle.id, 'a')}
-                  disabled={voted}
-                >
-                  <div className="battle-author">{rantA.author}</div>
-                  <div className="battle-rant-title">{rantA.title}</div>
-                </button>
-
-                <div className="battle-divider" />
-                <div className="vs-badge">VS</div>
-
-                {/* Side B */}
-                <button
-                  className={`battle-side ${
-                    voted
-                      ? battle.userVote === 'b' ? 'voted-win' : 'voted-lose'
-                      : ''
-                  }`}
-                  onClick={() => !voted && vote(battle.id, 'b')}
-                  disabled={voted}
-                >
-                  <div className="battle-author">{rantB.author}</div>
-                  <div className="battle-rant-title">{rantB.title}</div>
-                </button>
-              </div>
-
-              {/* Vote bar + percentages */}
-              <div className="battle-vote-bar">
-                <div className="vote-bar-a" style={{ width: `${voted ? pctA : 50}%` }} />
-                <div className="vote-bar-b" style={{ width: `${voted ? pctB : 50}%` }} />
-              </div>
-
-              {voted ? (
-                <div className="battle-vote-pcts">
-                  <span className="a">{pctA}% 🔥</span>
-                  <span className="b">{pctB}% 🔥</span>
-                </div>
-              ) : (
-                <div className="vote-prompt">Tap a side to vote</div>
-              )}
-            </div>
-          );
-        })}
+      {/* Header */}
+      <div className="btl-header-row">
+        <div className="btl-title">⚔️ Battles</div>
+        <div className="btl-round">round #{round}</div>
       </div>
+      <div className="btl-sub">tap the rant that hits harder</div>
+
+      {/* Arena */}
+      <div className="btl-arena">
+
+        {/* Card A */}
+        <div
+          className={`btl-card${voted === 'a' ? ' btl-card--winner' : ''}${voted === 'b' ? ' btl-card--loser' : ''}${newSide === 'a' ? ' btl-card--enter' : ''}`}
+          style={{ background: CATEGORY_BG[rantA.category] }}
+          onClick={() => vote('a')}
+        >
+          <div className="btl-card-cat">{CATEGORY_EMOJI[rantA.category]} {rantA.category}</div>
+          <div className="btl-card-title">"{rantA.title}"</div>
+          <div className="btl-card-author">— {rantA.author}</div>
+          {voted === 'a' && <div className="btl-badge">✓ your pick</div>}
+        </div>
+
+        {/* VS / Stats strip */}
+        <div className="btl-vs-strip">
+          {voted ? (
+            <div className="btl-stats">
+              <span className="btl-pct btl-pct--a">{pctA}%</span>
+              <div className="btl-bar">
+                <div className="btl-bar-a" style={{ width: `${pctA}%` }} />
+                <div className="btl-bar-b" style={{ width: `${pctB}%` }} />
+              </div>
+              <span className="btl-pct btl-pct--b">{pctB}%</span>
+            </div>
+          ) : (
+            <span className="btl-vs-text">VS</span>
+          )}
+        </div>
+
+        {/* Card B */}
+        <div
+          className={`btl-card${voted === 'b' ? ' btl-card--winner' : ''}${voted === 'a' ? ' btl-card--loser' : ''}${newSide === 'b' ? ' btl-card--enter' : ''}`}
+          style={{ background: CATEGORY_BG[rantB.category] }}
+          onClick={() => vote('b')}
+        >
+          <div className="btl-card-cat">{CATEGORY_EMOJI[rantB.category]} {rantB.category}</div>
+          <div className="btl-card-title">"{rantB.title}"</div>
+          <div className="btl-card-author">— {rantB.author}</div>
+          {voted === 'b' && <div className="btl-badge">✓ your pick</div>}
+        </div>
+
+      </div>
+
+      {/* Affirmative */}
+      {voted && (
+        <div className="btl-affirm" key={round}>
+          {affirmMsg()}
+        </div>
+      )}
+
+      {!voted && (
+        <div className="btl-hint">
+          next challenger auto-loads after you vote
+        </div>
+      )}
+
     </div>
   );
 }

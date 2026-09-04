@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.rantr.app",
+    "sha256_cert_fingerprints": [
+      "34:82:7E:F0:4A:24:25:34:B6:0B:EB:14:05:48:38:95:63:6B:67:7C:4C:70:70:2C:BE:A8:47:4F:32:BD:13:95"
+    ]
+  }
+}]

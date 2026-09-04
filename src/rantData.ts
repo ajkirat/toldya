@@ -179,11 +179,13 @@ export const DAILY_PROMPTS = [
 ];
 
 export function createInitialBattles(): RantBattle[] {
+  const H = 3_600_000;
+  const now = Date.now();
   return [
-    { id: 'battle1', rantAId: 'b1',  rantBId: 'b7',  votesA: 312, votesB: 245, userVote: null },
-    { id: 'battle2', rantAId: 'b11', rantBId: 'b12', votesA: 489, votesB: 356, userVote: null },
-    { id: 'battle3', rantAId: 'b19', rantBId: 'b20', votesA: 267, votesB: 389, userVote: null },
-    { id: 'battle4', rantAId: 'b16', rantBId: 'b17', votesA: 534, votesB: 412, userVote: null },
-    { id: 'battle5', rantAId: 'b5',  rantBId: 'b15', votesA: 223, votesB: 278, userVote: null },
+    { id: 'battle1', rantAId: 'b1',  rantBId: 'b7',  votesA: 312, votesB: 245, userVote: null, topic: 'Work vs Home Life',      expiresAt: now + 18 * H },
+    { id: 'battle2', rantAId: 'b11', rantBId: 'b12', votesA: 489, votesB: 356, userVote: null, topic: 'Tech Fails',             expiresAt: now + 6 * H  },
+    { id: 'battle3', rantAId: 'b19', rantBId: 'b20', votesA: 267, votesB: 389, userVote: null, topic: 'Texting Etiquette',      expiresAt: now + 22 * H },
+    { id: 'battle4', rantAId: 'b16', rantBId: 'b17', votesA: 534, votesB: 412, userVote: null, topic: 'Sports Rage',            expiresAt: now + 12 * H },
+    { id: 'battle5', rantAId: 'b5',  rantBId: 'b15', votesA: 223, votesB: 278, userVote: null, topic: 'Work vs Government',     expiresAt: now + 36 * H },
   ];
 }
